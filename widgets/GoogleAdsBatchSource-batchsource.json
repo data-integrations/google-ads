@@ -1,0 +1,145 @@
+{
+  "metadata": {
+    "spec-version": "1.0"
+  },
+  "configuration-groups": [
+    {
+      "label": "Basic",
+      "properties": [
+        {
+          "widget-type": "textbox",
+          "label": "Authorization token",
+          "name": "oauth2_access_token"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Developer token",
+          "name": "developer_token"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Customer ID",
+          "name": "client_customer_id"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Start Date",
+          "name": "start_date"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "End Date",
+          "name": "end_date"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Format",
+          "name": "report_format",
+          "default": "csv"
+        }
+      ]
+    },
+    {
+      "label": "Advanced",
+      "properties": [
+        {
+          "widget-type": "toggle",
+          "label": "Include Report Header",
+          "name": "includeReportHeader",
+          "widget-attributes": {
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            },
+            "default": "true"
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "label": "Include Column Header",
+          "name": "includeColumnHeader",
+          "widget-attributes": {
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            },
+            "default": "true"
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "label": "Include Report Summary",
+          "name": "includeReportSummary",
+          "widget-attributes": {
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            },
+            "default": "true"
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "label": "Use Raw Enum Values",
+          "name": "useRawEnumValues",
+          "widget-attributes": {
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            },
+            "default": "false"
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "label": "Include Zero Impressions",
+          "name": "includeZeroImpressions",
+          "widget-attributes": {
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            },
+            "default": "false"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Report type",
+          "name": "report_type"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Fields",
+          "name": "report_fields"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "widget-type": "non-editable-schema-editor",
+      "schema": {
+      }
+    }
+  ]
+}

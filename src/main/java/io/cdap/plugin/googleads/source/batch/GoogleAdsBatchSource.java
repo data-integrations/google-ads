@@ -29,20 +29,17 @@ import io.cdap.cdap.etl.api.batch.BatchSourceContext;
 import io.cdap.plugin.common.LineageRecorder;
 import org.apache.hadoop.io.NullWritable;
 
-import java.util.Arrays;
-
 /**
  * Plugin read Google AdWords reports in batch
  */
 @Plugin(type = BatchSource.PLUGIN_TYPE)
 @Name(GoogleAdsBatchSource.NAME)
-@Description("Read Google AdWords reports in batch")
+@Description("Reads Google AdWords report in batch")
 public class GoogleAdsBatchSource extends BatchSource<NullWritable, StructuredRecord, StructuredRecord> {
 
   private final GoogleAdsBatchSourceConfig config;
 
   public static final String NAME = "GoogleAdsBatchSource";
-
 
   public GoogleAdsBatchSource(GoogleAdsBatchSourceConfig config) {
     this.config = config;
@@ -59,10 +56,9 @@ public class GoogleAdsBatchSource extends BatchSource<NullWritable, StructuredRe
   public void prepareRun(BatchSourceContext context) throws Exception {
     LineageRecorder lineageRecorder = new LineageRecorder(context, config.referenceName);
     lineageRecorder.createExternalDataset(config.getSchema());
-    lineageRecorder.recordRead("Read", "Reading Google AdWords reports", Arrays.asList(config.getReport_fields()));
+    lineageRecorder.recordRead("Reads", "Reading Google AdWords report", config.getReportFields());
     context.setInput(Input.of(NAME, new GoogleAdsInputFormatProvider(config)));
   }
-
 
   @Override
   public void transform(KeyValue<NullWritable, StructuredRecord> input, Emitter<StructuredRecord> emitter) {

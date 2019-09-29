@@ -15,17 +15,27 @@
  */
 package io.cdap.plugin.googleads.source.batch;
 
-import com.google.common.base.Strings;
+import com.google.api.ads.adwords.lib.jaxb.v201809.ReportDefinitionReportType;
+import com.google.api.ads.common.lib.exception.OAuthException;
+import com.google.api.ads.common.lib.exception.ValidationException;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
-import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.plugin.common.ReferencePluginConfig;
+import io.cdap.plugin.googleads.common.GoogleAdsHelper;
 
+import java.rmi.RemoteException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 
 /**
  * Provides all required configuration for reading Google AdWords reports
@@ -36,195 +46,171 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
     super(referenceName);
   }
 
-  public String getOauth2_access_token() {
-    return oauth2_access_token;
-  }
-
-  public String getDeveloper_token() {
-    return developer_token;
-  }
-
-  public String getClient_customer_id() {
-    return client_customer_id;
-  }
-
-  public String getStart_date() {
-    return start_date;
-  }
-
-  public String getEnd_date() {
-    return end_date;
-  }
-
-  public String getReport_format() {
-    return report_format;
-  }
-
-  @Nullable
-  public Boolean getIncludeReportHeader() {
-    return includeReportHeader;
-  }
-
-  @Nullable
-  public Boolean getIncludeColumnHeader() {
-    return includeColumnHeader;
-  }
-
-  @Nullable
-  public Boolean getIncludeReportSummary() {
-    return includeReportSummary;
-  }
-
-  @Nullable
-  public Boolean getUseRawEnumValues() {
-    return useRawEnumValues;
-  }
-
-  @Nullable
-  public Boolean getIncludeZeroImpressions() {
-    return includeZeroImpressions;
-  }
-
-  public String getReport_type() {
-    return report_type;
-  }
-
-  public String[] getReport_fields() {
-    return report_fields.split(",");
-  }
-
-  @Name("oauth2_access_token")
-  @Description("Authorization token")
+  @Description("Refresh token")
   @Macro
-  protected String oauth2_access_token;
+  public String refreshToken;
 
-  @Name("developer_token")
+  @Description("Client ID")
+  @Macro
+  public String clientId;
+
+  @Description("Client Secret")
+  @Macro
+  public String clientSecret;
+
   @Description("Developer token")
   @Macro
-  protected String developer_token;
+  public String developerToken;
 
-  @Name("client_customer_id")
   @Description("Customer ID")
   @Macro
-  protected String client_customer_id;
+  public String clientCustomerId;
 
-  @Name("start_date")
   @Description("Start Date")
   @Macro
-  protected String start_date;
+  protected String startDate;
 
-  @Name("end_date")
   @Description("End Date")
   @Macro
-  protected String end_date;
+  protected String endDate;
 
-  @Name("report_format")
-  @Description("Format")
-  @Macro
-  protected String report_format;
-
-  @Name("includeReportHeader")
-  @Description("Include Report Header")
-  @Nullable
-  @Macro
-  protected Boolean includeReportHeader;
-
-  @Name("includeColumnHeader")
-  @Description("Include Column Header")
-  @Nullable
-  @Macro
-  protected Boolean includeColumnHeader;
-
-  @Name("includeReportSummary")
   @Description("Include Report Summary")
-  @Nullable
   @Macro
-  protected Boolean includeReportSummary;
+  public Boolean includeReportSummary;
 
-  @Name("useRawEnumValues")
   @Description("Use Raw Enum Values")
-  @Nullable
   @Macro
-  protected Boolean useRawEnumValues;
+  public Boolean useRawEnumValues;
 
-  @Name("includeZeroImpressions")
   @Description("Include Zero Impressions")
-  @Nullable
   @Macro
-  protected Boolean includeZeroImpressions;
+  public Boolean includeZeroImpressions;
 
-  @Name("report_type")
   @Description("Report type")
   @Macro
-  protected String report_type;
+  protected String reportType;
 
-  @Name("report_fields")
   @Description("Fields")
   @Macro
-  protected String report_fields;
+  protected String reportFields;
 
+  public List<String> getReportFields() {
+    List<String> fields = Arrays.asList(reportFields.split(","));
+    if (fields.size()==1 && fields.contains("ALL")){
+      try {
+        return new GoogleAdsHelper().getNoConflictFields(this);
+      } catch (OAuthException | ValidationException | RemoteException e) {
+        throw new IllegalArgumentException(e);
+      }
+    }
+    return fields;
+  }
 
   public void validate(FailureCollector failureCollector) {
-    if (Strings.isNullOrEmpty(oauth2_access_token)) {
-      failureCollector
-        .addFailure("Authorization token must be not empty.", "Enter valid value.")
-        .withConfigProperty(oauth2_access_token);
+    GoogleAdsHelper googleAdsHelper = new GoogleAdsHelper();
+    validateAuthorisation(failureCollector, googleAdsHelper);
+    validateDateRange(failureCollector);
+    validateReportTypeAndFields(failureCollector, googleAdsHelper);
+  }
+
+  protected void validateAuthorisation(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
+    try {
+      googleAdsHelper.getAdWordsSession(this);
+    } catch (OAuthException | ValidationException e) {
+      failureCollector.addFailure(e.getMessage(), "Enter valid credentials");
     }
-    if (Strings.isNullOrEmpty(developer_token)) {
-      failureCollector
-        .addFailure("Developer token must be not empty.", "Enter valid value.")
-        .withConfigProperty(developer_token);
+  }
+
+  protected void validateReportTypeAndFields(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
+    ReportDefinitionReportType reportDefinitionReportType = null;
+    try {
+      reportDefinitionReportType = getReportType();
+    } catch (IllegalArgumentException ex) {
+      failureCollector.addFailure("Invalid reportDefinitionReportType", "Enter valid reportDefinitionReportType").withConfigProperty(reportType);
     }
-    if (Strings.isNullOrEmpty(client_customer_id)) {
-      failureCollector
-        .addFailure("Customer ID must be not empty.", "Enter valid value.")
-        .withConfigProperty(client_customer_id);
+    if (reportDefinitionReportType != null){
+      validateFields(failureCollector, googleAdsHelper);
     }
-    if (Strings.isNullOrEmpty(start_date)) {
-      failureCollector
-        .addFailure("Start Date must be not empty.", "Enter valid value.")
-        .withConfigProperty(start_date);
+  }
+
+  protected void validateFields(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
+    try {
+      List<String> fields = googleAdsHelper.getAllFields(this);
+      if (!fields.containsAll(getReportFields())){
+        failureCollector.addFailure("Invalid reportFields", "Enter valid reportFields according to record type").withConfigProperty(reportFields);
+      }
+    } catch (OAuthException | ValidationException | RemoteException ignored) {
     }
-    if (Strings.isNullOrEmpty(end_date)) {
-      failureCollector
-        .addFailure("End Date must be not empty.", "Enter valid value.")
-        .withConfigProperty(end_date);
+  }
+
+  protected void validateDateRange(FailureCollector failureCollector) {
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyDDmm");
+    Date startDate = null;
+    Date endDate = null;
+    try {
+      startDate = simpleDateFormat.parse(getStartDate());
+    } catch (ParseException e) {
+      failureCollector.addFailure("Invalid startDate format.", "Enter valid YYYYMMDD date format.").withConfigProperty(this.startDate);
     }
-    if (includeReportHeader == null) {
-      failureCollector
-        .addFailure("Include Report Header must be not empty.", "Enter valid value.");
+    try {
+      endDate = simpleDateFormat.parse(getEndDate());
+    } catch (ParseException e) {
+      failureCollector.addFailure("Invalid endDate format.", "Enter valid YYYYMMDD date format.").withConfigProperty(this.endDate);
     }
-    if (includeColumnHeader == null) {
-      failureCollector
-        .addFailure("Include Column Header must be not empty.", "Enter valid value.");
-    }
-    if (includeReportSummary == null) {
-      failureCollector
-        .addFailure("Include Report Summary must be not empty.", "Enter valid value.");
-    }
-    if (useRawEnumValues == null) {
-      failureCollector
-        .addFailure("Use Raw Enum Values must be not empty.", "Enter valid value.");
-    }
-    if (includeZeroImpressions == null) {
-      failureCollector
-        .addFailure("Include Zero Impressions must be not empty.", "Enter valid value.");
-    }
-    if (Strings.isNullOrEmpty(report_fields)) {
-      failureCollector
-        .addFailure("Fields must be not empty.", "Enter valid value.")
-        .withConfigProperty(report_fields);
+    if (startDate != null &&
+      endDate != null &&
+      startDate.after(endDate)) {
+      failureCollector.addFailure("startDate must be earlier than endDate.", "Enter valid date.");
     }
   }
 
   public Schema getSchema() {
-    Set<Schema.Field> schemaFields = new HashSet<Schema.Field>();
-    for (String name : report_fields.split(",")) {
+    Set<Schema.Field> schemaFields = new HashSet<>();
+    for (String name : getReportFields()) {
       schemaFields.add(Schema.Field.of(name, Schema.nullableOf(Schema.of(Schema.Type.STRING))));
     }
 
     return Schema.recordOf(
       "GoogleAdsRecords",
       schemaFields);
+  }
+
+  public String getStartDate() {
+    return getDate(startDate);
+  }
+
+  public String getEndDate() {
+    return getDate(endDate);
+  }
+
+  public String getDate(String date) {
+
+    DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    Date today = new Date();
+    if (date.equalsIgnoreCase("TODAY")) {
+      return dateFormat.format(today);
+    }
+    Calendar cal = new GregorianCalendar();
+    cal.setTime(today);
+    if (date.equalsIgnoreCase("LAST_30_DAYS")) {
+      cal.add(Calendar.DAY_OF_MONTH, -30);
+      Date today30 = cal.getTime();
+      return dateFormat.format(today30);
+    }
+    if (date.equalsIgnoreCase("LAST_60_DAYS")) {
+      cal.add(Calendar.DAY_OF_MONTH, -60);
+      Date today60 = cal.getTime();
+      return dateFormat.format(today60);
+    }
+    if (date.equalsIgnoreCase("LAST_90_DAYS")) {
+      cal.add(Calendar.DAY_OF_MONTH, -90);
+      Date today90 = cal.getTime();
+      return dateFormat.format(today90);
+    }
+    return date;
+  }
+
+  public ReportDefinitionReportType getReportType() {
+    return ReportDefinitionReportType.fromValue(reportType);
   }
 }

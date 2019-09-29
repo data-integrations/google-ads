@@ -1,37 +1,35 @@
-# Google Ads batch source
+# Google Ads - Single report batch source
 
 Description
 -----------
-Google Ads source plugin would allow users to retrieve all of their Google Ads reports in batch mode.
+Google Ads is an online advertising platform developed by Google, where advertisers pay to display brief advertisements, service offerings, product listings, video content, and generate mobile application installs within the Google ad network to web users. Google Ads single report source plugin would allow users to retrieve the specified report type from their Google Ads account in batch mode.
 
 Properties
 ----------
 ### Basic
 
-**Authorization token:** Authorization to download the report.
+**Report type:** Google Ads report type to retrieve. https://developers.google.com/adwords/api/docs/appendix/reports
 
-**Developer token:** Developer token consisting of unique string.
+**Refresh token:** Authorization to download the report. https://developers.google.com/adwords/api/docs/guides/authentication
+
+**Client ID Secrets:** OAuth 2.0 client ID from https://console.developers.google.com
+
+**Client Secret:** OAuth 2.0 client Secret from https://console.developers.google.com
+
+**Developer token:** Developer token consisting of unique string. https://developers.google.com/adwords/api/docs/guides/reporting#prepare_the_request
 
 **Customer ID:** Customer ID of the client account.
 
-**Start Date:** Start date for the report data.
+**Start Date:** Start date for the report data. YYYYMMDD format. Allow "LAST_30_DAYS", "LAST_60_DAYS" and "LAST_90_DAYS"  options.
 
-**End Date:** End date for the report data.
-
-**Format:** Report format.
+**End Date:** End date for the report data. YYYYMMDD format. Allow "TODAY" option.
 
 ### Advanced
 
-**Include Report Header:** If false, report output will not include a header row containing the report name and date range.
+**Include Report Summary:** Specifies whether report include a summary row containing the report totals.
 
-**Include Column Header:** If false, report output will not include a header row containing field names.
+**Use Raw Enum Values:** Specifies whether returned format to be the actual enum value.
 
-**Include Report Summary:** If false, report output will not include a summary row containing the report totals.
+**Include Zero Impressions:** Specifies whether report include rows where all specified metric fields are zero.
 
-**Use Raw Enum Values:** Set to true if you want the returned format to be the actual enum value.
-
-**Include Zero Impressions:** If true, report output will include rows where all specified metric fields are zero.
-
-**Report type:** Report type.
-
-**Fields:** Coma separated list of fields to pull.
+**Fields:** list of fields to pull. Allow "ALL" option (select not conflicted fields). https://developers.google.com/adwords/api/docs/appendix/reports/all-reports

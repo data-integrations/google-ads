@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "spec-version": "1.0"
+    "spec-version": "1.5"
   },
   "configuration-groups": [
     {
@@ -8,72 +8,101 @@
       "properties": [
         {
           "widget-type": "textbox",
-          "label": "Authorization token",
-          "name": "oauth2_access_token"
+          "label": "Refresh token",
+          "name": "refreshToken"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Client ID",
+          "name": "clientId"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Client Secret",
+          "name": "clientSecret"
         },
         {
           "widget-type": "textbox",
           "label": "Developer token",
-          "name": "developer_token"
+          "name": "developerToken"
+        },
+        {
+          "name": "reportType",
+          "label": "Report type",
+          "widget-type": "select",
+          "widget-attributes": {
+            "default": "UNKNOWN",
+            "values": [
+              "KEYWORDS_PERFORMANCE_REPORT",
+              "AD_PERFORMANCE_REPORT",
+              "URL_PERFORMANCE_REPORT",
+              "ADGROUP_PERFORMANCE_REPORT",
+              "CAMPAIGN_PERFORMANCE_REPORT",
+              "ACCOUNT_PERFORMANCE_REPORT",
+              "GEO_PERFORMANCE_REPORT",
+              "SEARCH_QUERY_PERFORMANCE_REPORT",
+              "AUTOMATIC_PLACEMENTS_PERFORMANCE_REPORT",
+              "CAMPAIGN_NEGATIVE_KEYWORDS_PERFORMANCE_REPORT",
+              "CAMPAIGN_NEGATIVE_PLACEMENTS_PERFORMANCE_REPORT",
+              "SHARED_SET_REPORT",
+              "CAMPAIGN_SHARED_SET_REPORT",
+              "SHARED_SET_CRITERIA_REPORT",
+              "CREATIVE_CONVERSION_REPORT",
+              "CALL_METRICS_CALL_DETAILS_REPORT",
+              "KEYWORDLESS_QUERY_REPORT",
+              "KEYWORDLESS_CATEGORY_REPORT",
+              "CRITERIA_PERFORMANCE_REPORT",
+              "CLICK_PERFORMANCE_REPORT",
+              "BUDGET_PERFORMANCE_REPORT",
+              "BID_GOAL_PERFORMANCE_REPORT",
+              "DISPLAY_KEYWORD_PERFORMANCE_REPORT",
+              "PLACEHOLDER_FEED_ITEM_REPORT",
+              "PLACEMENT_PERFORMANCE_REPORT",
+              "CAMPAIGN_NEGATIVE_LOCATIONS_REPORT",
+              "GENDER_PERFORMANCE_REPORT",
+              "AGE_RANGE_PERFORMANCE_REPORT",
+              "CAMPAIGN_LOCATION_TARGET_REPORT",
+              "CAMPAIGN_AD_SCHEDULE_TARGET_REPORT",
+              "PAID_ORGANIC_QUERY_REPORT",
+              "AUDIENCE_PERFORMANCE_REPORT",
+              "DISPLAY_TOPICS_PERFORMANCE_REPORT",
+              "USER_AD_DISTANCE_REPORT",
+              "SHOPPING_PERFORMANCE_REPORT",
+              "PRODUCT_PARTITION_REPORT",
+              "PARENTAL_STATUS_PERFORMANCE_REPORT",
+              "PLACEHOLDER_REPORT",
+              "AD_CUSTOMIZERS_FEED_ITEM_REPORT",
+              "LABEL_REPORT",
+              "FINAL_URL_REPORT",
+              "VIDEO_PERFORMANCE_REPORT",
+              "TOP_CONTENT_PERFORMANCE_REPORT",
+              "CAMPAIGN_CRITERIA_REPORT",
+              "CAMPAIGN_GROUP_PERFORMANCE_REPORT",
+              "LANDING_PAGE_REPORT",
+              "MARKETPLACE_PERFORMANCE_REPORT"
+            ]
+          }
         },
         {
           "widget-type": "textbox",
           "label": "Customer ID",
-          "name": "client_customer_id"
+          "name": "clientCustomerId"
         },
         {
           "widget-type": "textbox",
           "label": "Start Date",
-          "name": "start_date"
+          "name": "startDate"
         },
         {
           "widget-type": "textbox",
           "label": "End Date",
-          "name": "end_date"
-        },
-        {
-          "widget-type": "textbox",
-          "label": "Format",
-          "name": "report_format",
-          "default": "csv"
+          "name": "endDate"
         }
       ]
     },
     {
       "label": "Advanced",
       "properties": [
-        {
-          "widget-type": "toggle",
-          "label": "Include Report Header",
-          "name": "includeReportHeader",
-          "widget-attributes": {
-            "on": {
-              "value": "true",
-              "label": "True"
-            },
-            "off": {
-              "value": "false",
-              "label": "False"
-            },
-            "default": "true"
-          }
-        },
-        {
-          "widget-type": "toggle",
-          "label": "Include Column Header",
-          "name": "includeColumnHeader",
-          "widget-attributes": {
-            "on": {
-              "value": "true",
-              "label": "True"
-            },
-            "off": {
-              "value": "false",
-              "label": "False"
-            },
-            "default": "true"
-          }
-        },
         {
           "widget-type": "toggle",
           "label": "Include Report Summary",
@@ -123,14 +152,12 @@
           }
         },
         {
-          "widget-type": "textbox",
-          "label": "Report type",
-          "name": "report_type"
-        },
-        {
-          "widget-type": "textbox",
-          "label": "Fields",
-          "name": "report_fields"
+          "name": "reportFields",
+          "label": "Report Fields",
+          "widget-type": "dsv",
+          "widget-attributes": {
+            "delimiter": ","
+          }
         }
       ]
     }

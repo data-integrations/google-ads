@@ -20,6 +20,7 @@ import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
+import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.plugin.common.ReferencePluginConfig;
@@ -46,50 +47,75 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
     super(referenceName);
   }
 
+  public static final String REFRESH_TOKEN = "refreshToken";
+  public static final String CLIENT_ID = "clientId";
+  public static final String CLIENT_SECRET = "clientSecret";
+  public static final String DEVELOPER_TOKEN = "developerToken";
+  public static final String CLIENT_CUSTOMER_ID = "clientCustomerId";
+  public static final String START_DATE = "startDate";
+  public static final String END_DATE = "endDate";
+  public static final String INCLUDE_REPORT_SUMMARY = "includeReportSummary";
+  public static final String USE_RAW_ENUM_VALUES = "useRawEnumValues";
+  public static final String INCLUDE_ZERO_IMPRESSIONS = "includeZeroImpressions";
+  public static final String REPORT_TYPE = "reportType";
+  public static final String REPORT_FIELDS = "reportFields";
+
+  @Name(REFRESH_TOKEN)
   @Description("Refresh token")
   @Macro
   public String refreshToken;
 
+  @Name(CLIENT_ID)
   @Description("Client ID")
   @Macro
   public String clientId;
 
+  @Name(CLIENT_SECRET)
   @Description("Client Secret")
   @Macro
   public String clientSecret;
 
+  @Name(DEVELOPER_TOKEN)
   @Description("Developer token")
   @Macro
   public String developerToken;
 
+  @Name(CLIENT_CUSTOMER_ID)
   @Description("Customer ID")
   @Macro
   public String clientCustomerId;
 
+  @Name(START_DATE)
   @Description("Start Date")
   @Macro
   protected String startDate;
 
+  @Name(END_DATE)
   @Description("End Date")
   @Macro
   protected String endDate;
 
+  @Name(INCLUDE_REPORT_SUMMARY)
   @Description("Include Report Summary")
   @Macro
   public Boolean includeReportSummary;
 
+  @Name(USE_RAW_ENUM_VALUES)
   @Description("Use Raw Enum Values")
   @Macro
   public Boolean useRawEnumValues;
 
+  @Name(INCLUDE_ZERO_IMPRESSIONS)
   @Description("Include Zero Impressions")
   @Macro
   public Boolean includeZeroImpressions;
 
+  @Name(REPORT_TYPE)
   @Description("Report type")
   @Macro
   protected String reportType;
 
+  @Name(REPORT_FIELDS)
   @Description("Fields")
   @Macro
   protected String reportFields;
@@ -114,6 +140,13 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
   }
 
   protected void validateAuthorisation(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
+    if (containsMacro(REFRESH_TOKEN)
+      || containsMacro(CLIENT_ID)
+      || containsMacro(CLIENT_SECRET)
+      || containsMacro(DEVELOPER_TOKEN)
+      || containsMacro(CLIENT_CUSTOMER_ID)){
+      return;
+    }
     try {
       googleAdsHelper.getAdWordsSession(this);
     } catch (OAuthException | ValidationException e) {
@@ -122,11 +155,14 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
   }
 
   protected void validateReportTypeAndFields(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
+    if (containsMacro(REPORT_TYPE)){
+      return;
+    }
     ReportDefinitionReportType reportDefinitionReportType = null;
     try {
       reportDefinitionReportType = getReportType();
     } catch (IllegalArgumentException ex) {
-      failureCollector.addFailure("Invalid reportDefinitionReportType", "Enter valid reportDefinitionReportType").withConfigProperty(reportType);
+      failureCollector.addFailure("Invalid reportDefinitionReportType", "Enter valid reportDefinitionReportType").withConfigProperty(REPORT_TYPE);
     }
     if (reportDefinitionReportType != null){
       validateFields(failureCollector, googleAdsHelper);
@@ -134,28 +170,35 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
   }
 
   protected void validateFields(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
+    if (containsMacro(REPORT_FIELDS)){
+      return;
+    }
     try {
       List<String> fields = googleAdsHelper.getAllFields(this);
       if (!fields.containsAll(getReportFields())){
-        failureCollector.addFailure("Invalid reportFields", "Enter valid reportFields according to record type").withConfigProperty(reportFields);
+        failureCollector.addFailure("Invalid reportFields", "Enter valid reportFields according to record type").withConfigProperty(REPORT_FIELDS);
       }
     } catch (OAuthException | ValidationException | RemoteException ignored) {
     }
   }
 
   protected void validateDateRange(FailureCollector failureCollector) {
+    if (containsMacro(START_DATE)
+      || containsMacro(END_DATE)){
+      return;
+    }
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyDDmm");
     Date startDate = null;
     Date endDate = null;
     try {
       startDate = simpleDateFormat.parse(getStartDate());
     } catch (ParseException e) {
-      failureCollector.addFailure("Invalid startDate format.", "Enter valid YYYYMMDD date format.").withConfigProperty(this.startDate);
+      failureCollector.addFailure("Invalid startDate format.", "Enter valid YYYYMMDD date format.").withConfigProperty(START_DATE);
     }
     try {
       endDate = simpleDateFormat.parse(getEndDate());
     } catch (ParseException e) {
-      failureCollector.addFailure("Invalid endDate format.", "Enter valid YYYYMMDD date format.").withConfigProperty(this.endDate);
+      failureCollector.addFailure("Invalid endDate format.", "Enter valid YYYYMMDD date format.").withConfigProperty(END_DATE);
     }
     if (startDate != null &&
       endDate != null &&
@@ -183,7 +226,7 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
     return getDate(endDate);
   }
 
-  public String getDate(String date) {
+  private String getDate(String date) {
 
     DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     Date today = new Date();

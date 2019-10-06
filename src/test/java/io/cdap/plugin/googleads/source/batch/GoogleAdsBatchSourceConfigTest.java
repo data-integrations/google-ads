@@ -1,5 +1,7 @@
 package io.cdap.plugin.googleads.source.batch;
 
+import com.google.api.ads.adwords.axis.v201809.cm.ReportDefinitionField;
+import com.google.api.ads.adwords.lib.jaxb.v201809.ReportDefinitionReportType;
 import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
 import io.cdap.cdap.api.data.schema.Schema;
@@ -18,6 +20,29 @@ import static org.mockito.Mockito.spy;
 
 public class GoogleAdsBatchSourceConfigTest {
 
+
+  public static GoogleAdsBatchSourceConfig getTestConfig(String refreshToken, String clientId, String clientSecret,
+                                                         String developerToken, String clientCustomerId) {
+    GoogleAdsBatchSourceConfig config = spy(new GoogleAdsBatchSourceConfig("test"));
+    List<String> fields = new ArrayList<>();
+    fields.add("AccountCurrencyCode");
+    fields.add("AccountDescriptiveName");
+    fields.add("AccountTimeZone");
+    doReturn(ReportDefinitionReportType.KEYWORDS_PERFORMANCE_REPORT).when(config).getReportType();
+
+    doReturn(fields).when(config).getReportFields();
+    config.startDate = "LAST_30_DAYS";
+    config.endDate = "TODAY";
+    config.refreshToken = refreshToken;
+    config.clientId = clientId;
+    config.clientSecret = clientSecret;
+    config.developerToken = developerToken;
+    config.clientCustomerId = clientCustomerId;
+    config.includeReportSummary = true;
+    config.useRawEnumValues = true;
+    config.includeZeroImpressions = true;
+    return config;
+  }
 
   @Test
   public void testValidateAuthorisation() throws OAuthException, ValidationException {
@@ -86,16 +111,27 @@ public class GoogleAdsBatchSourceConfigTest {
   @Test
   public void testValidateReportTypeAndFields() throws OAuthException, RemoteException, ValidationException {
     //setup mocks
-    GoogleAdsBatchSourceConfig config = new GoogleAdsBatchSourceConfig("test");
+    GoogleAdsBatchSourceConfig config = spy(new GoogleAdsBatchSourceConfig("test"));
     config.reportType = "KEYWORDS_PERFORMANCE_REPORT";
     config.reportFields = "test1,test2";
     GoogleAdsHelper googleAdsHelper = spy(GoogleAdsHelper.class);
-    List<String> fields = new ArrayList<>();
-    fields.add("test1");
-    fields.add("test2");
-    fields.add("test3");
 
-    doReturn(fields).when(googleAdsHelper).getAllFields(config);
+    ReportDefinitionField reportDefinitionField1 = new ReportDefinitionField();
+    reportDefinitionField1.setFieldName("test1");
+    ReportDefinitionField reportDefinitionField2 = new ReportDefinitionField();
+    reportDefinitionField2.setFieldName("test2");
+    ReportDefinitionField reportDefinitionField3 = new ReportDefinitionField();
+    reportDefinitionField3.setFieldName("test3");
+    reportDefinitionField3.setExclusiveFields(new String[]{"test4"});
+    ReportDefinitionField reportDefinitionField4 = new ReportDefinitionField();
+    reportDefinitionField4.setFieldName("test4");
+    reportDefinitionField4.setExclusiveFields(new String[]{"test3"});
+    ReportDefinitionField[] fields = new ReportDefinitionField[]{reportDefinitionField1,
+      reportDefinitionField2,
+      reportDefinitionField3,
+      reportDefinitionField4};
+
+    doReturn(fields).when(googleAdsHelper).getReportDefinitionFields(config);
     MockFailureCollector failureCollector = new MockFailureCollector();
     //test
     config.validateReportTypeAndFields(failureCollector, googleAdsHelper);
@@ -103,11 +139,29 @@ public class GoogleAdsBatchSourceConfigTest {
     Assert.assertTrue(failureCollector.getValidationFailures().isEmpty());
 
     //setup mocks failure
-    config.reportFields = "test1,test4";
+    config.reportFields = "test1,test5";
     //test
     config.validateReportTypeAndFields(failureCollector, googleAdsHelper);
     //assert
     Assert.assertEquals(1, failureCollector.getValidationFailures().size());
+    Assert.assertEquals("Invalid Field test5", failureCollector.getValidationFailures().get(0).getMessage());
+    failureCollector.getValidationFailures().clear();
+
+
+    //setup mocks failure
+    config.reportFields = "test3,test4,test4,invalid"; //valid
+    //test
+    config.validateReportTypeAndFields(failureCollector, googleAdsHelper);
+    //assert
+    Assert.assertEquals(3, failureCollector.getValidationFailures().size());
+
+    Assert.assertEquals("reportFields contains duplicates",
+                        failureCollector.getValidationFailures().get(0).getMessage());
+    Assert.assertEquals("Field test4 conflict with test3",
+                        failureCollector.getValidationFailures().get(1).getMessage());
+    Assert.assertEquals("Invalid Field invalid",
+                        failureCollector.getValidationFailures().get(2).getMessage());
+    failureCollector.getValidationFailures().clear();
 
     //setup mocks failure
     config.reportType = "invalid";
@@ -115,7 +169,11 @@ public class GoogleAdsBatchSourceConfigTest {
     //test
     config.validateReportTypeAndFields(failureCollector, googleAdsHelper);
     //assert
-    Assert.assertEquals(2, failureCollector.getValidationFailures().size());
+    Assert.assertEquals(1, failureCollector.getValidationFailures().size());
+
+    Assert.assertEquals("Invalid reportDefinitionReportType",
+                        failureCollector.getValidationFailures().get(0).getMessage());
+    failureCollector.getValidationFailures().clear();
   }
 
   @Test
@@ -123,8 +181,6 @@ public class GoogleAdsBatchSourceConfigTest {
     //setup mocks
     GoogleAdsBatchSourceConfig config = new GoogleAdsBatchSourceConfig("test");
     config.reportFields = "test1,test2";
-
-    MockFailureCollector failureCollector = new MockFailureCollector();
     //test
     Schema schema = config.getSchema();
     //assert

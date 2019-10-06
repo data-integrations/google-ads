@@ -45,7 +45,8 @@ public class GoogleAdsRecordReader extends RecordReader<NullWritable, Structured
 
 
   @Override
-  public void initialize(InputSplit inputSplit, TaskAttemptContext taskAttemptContext) throws IOException, InterruptedException {
+  public void initialize(InputSplit inputSplit, TaskAttemptContext taskAttemptContext)
+    throws IOException, InterruptedException {
     Configuration conf = taskAttemptContext.getConfiguration();
     String configJson = conf.get(GoogleAdsInputFormatProvider.PROPERTY_CONFIG_JSON);
     GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig = gson.fromJson(configJson, GoogleAdsBatchSourceConfig.class);

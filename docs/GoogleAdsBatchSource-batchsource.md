@@ -32,4 +32,4 @@ Properties
 
 **Include Zero Impressions:** Specifies whether report include rows where all specified metric fields are zero.
 
-**Fields:** list of fields to pull. Allow "ALL" option (select not conflicted fields). [doc](https://developers.google.com/adwords/api/docs/appendix/reports/all-reports)
+**Fields:** list of fields to pull. [doc](https://developers.google.com/adwords/api/docs/appendix/reports/all-reports)

@@ -54,7 +54,8 @@ import java.util.List;
  */
 public class GoogleAdsHelper {
 
-  String downloadReport(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig) throws OAuthException, ValidationException, IOException {
+  String downloadReport(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
+    throws OAuthException, ValidationException, IOException {
 
     AdWordsSession session = getAdWordsSession(googleAdsBatchSourceConfig);
     session.setReportingConfiguration(getReportingConfiguration(googleAdsBatchSourceConfig));
@@ -65,7 +66,8 @@ public class GoogleAdsHelper {
       adWordsServices.getUtility(session, ReportDownloaderInterface.class);
 
     try {
-      ReportDownloadResponse response = reportDownloader.downloadReport(getReportDefinition(googleAdsBatchSourceConfig));
+      ReportDownloadResponse response = reportDownloader.downloadReport(
+        getReportDefinition(googleAdsBatchSourceConfig));
       return response.getAsString();
     } catch (ReportException | ReportDownloadResponseException e) {
       throw new IOException(e);
@@ -79,7 +81,6 @@ public class GoogleAdsHelper {
     dateRange.setMax(googleAdsBatchSourceConfig.getEndDate());
     dateRange.setMin(googleAdsBatchSourceConfig.getStartDate());
     selector.setDateRange(dateRange);
-
 
     // Create report definition.
     ReportDefinition reportDefinition = new ReportDefinition();
@@ -101,7 +102,8 @@ public class GoogleAdsHelper {
       .build();
   }
 
-  public AdWordsSession getAdWordsSession(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig) throws OAuthException, ValidationException {
+  public AdWordsSession getAdWordsSession(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
+    throws OAuthException, ValidationException {
     AdWordsSession session;
     Credential credential = new OfflineCredentials.Builder()
       .forApi(OfflineCredentials.Api.ADWORDS)
@@ -118,7 +120,8 @@ public class GoogleAdsHelper {
     return session;
   }
 
-  public List<StructuredRecord> buildReportStructure(GoogleAdsBatchSourceConfig config) throws IOException, OAuthException, ValidationException {
+  public List<StructuredRecord> buildReportStructure(GoogleAdsBatchSourceConfig config)
+    throws IOException, OAuthException, ValidationException {
     String report = downloadReport(config);
     Reader reader = new StringReader(report);
     CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT);
@@ -138,18 +141,8 @@ public class GoogleAdsHelper {
     return reportStructure;
   }
 
-  public List<String> getAllFields(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig) throws OAuthException, ValidationException, RemoteException {
-
-    ReportDefinitionField[] reportDefinitionFields = getReportDefinitionFields(googleAdsBatchSourceConfig);
-
-    List<String> fields = new ArrayList<>();
-    for (ReportDefinitionField reportDefinitionField : reportDefinitionFields) {
-      fields.add(reportDefinitionField.getFieldName());
-    }
-    return fields;
-  }
-
-  private ReportDefinitionField[] getReportDefinitionFields(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig) throws OAuthException, ValidationException, RemoteException {
+  public ReportDefinitionField[] getReportDefinitionFields(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
+    throws OAuthException, ValidationException, RemoteException {
     AdWordsSession session = getAdWordsSession(googleAdsBatchSourceConfig);
     AdWordsServicesInterface adWordsServices = AdWordsServices.getInstance();
     // Get the ReportDefinitionService.
@@ -159,17 +152,5 @@ public class GoogleAdsHelper {
     // Get report fields.
     return reportDefinitionService
       .getReportFields(ReportDefinitionReportType.fromValue(googleAdsBatchSourceConfig.getReportType().value()));
-  }
-
-  public List<String> getNoConflictFields(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig) throws OAuthException, ValidationException, RemoteException {
-    ReportDefinitionField[] reportDefinitionFields = getReportDefinitionFields(googleAdsBatchSourceConfig);
-
-    List<String> fields = new ArrayList<>();
-    for (ReportDefinitionField reportDefinitionField : reportDefinitionFields) {
-      if (reportDefinitionField.getExclusiveFields() == null || reportDefinitionField.getExclusiveFields().length ==0) {
-        fields.add(reportDefinitionField.getFieldName());
-      }
-    }
-    return fields;
   }
 }

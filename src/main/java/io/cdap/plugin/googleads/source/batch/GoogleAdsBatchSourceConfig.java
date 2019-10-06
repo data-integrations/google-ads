@@ -15,6 +15,7 @@
  */
 package io.cdap.plugin.googleads.source.batch;
 
+import com.google.api.ads.adwords.axis.v201809.cm.ReportDefinitionField;
 import com.google.api.ads.adwords.lib.jaxb.v201809.ReportDefinitionReportType;
 import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
@@ -25,6 +26,7 @@ import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.plugin.common.ReferencePluginConfig;
 import io.cdap.plugin.googleads.common.GoogleAdsHelper;
+import io.cdap.plugin.googleads.common.ReportPresetHelper;
 
 import java.rmi.RemoteException;
 import java.text.DateFormat;
@@ -34,9 +36,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  * Provides all required configuration for reading Google AdWords reports
@@ -118,17 +123,15 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
   @Name(REPORT_FIELDS)
   @Description("Fields")
   @Macro
+  @Nullable
   protected String reportFields;
 
   public List<String> getReportFields() {
-    List<String> fields = Arrays.asList(reportFields.split(","));
-    if (fields.size()==1 && fields.contains("ALL")){
-      try {
-        return new GoogleAdsHelper().getNoConflictFields(this);
-      } catch (OAuthException | ValidationException | RemoteException e) {
-        throw new IllegalArgumentException(e);
-      }
+    ReportPresetHelper presetHelper = new ReportPresetHelper();
+    if (presetHelper.getReportPresets().containsKey(reportType)) {
+      return presetHelper.getReportPreset(reportType).getFields();
     }
+    List<String> fields = Arrays.asList(reportFields.split(","));
     return fields;
   }
 
@@ -144,7 +147,7 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
       || containsMacro(CLIENT_ID)
       || containsMacro(CLIENT_SECRET)
       || containsMacro(DEVELOPER_TOKEN)
-      || containsMacro(CLIENT_CUSTOMER_ID)){
+      || containsMacro(CLIENT_CUSTOMER_ID)) {
       return;
     }
     try {
@@ -155,36 +158,70 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
   }
 
   protected void validateReportTypeAndFields(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
-    if (containsMacro(REPORT_TYPE)){
+    if (containsMacro(REPORT_TYPE)) {
       return;
     }
     ReportDefinitionReportType reportDefinitionReportType = null;
     try {
       reportDefinitionReportType = getReportType();
     } catch (IllegalArgumentException ex) {
-      failureCollector.addFailure("Invalid reportDefinitionReportType", "Enter valid reportDefinitionReportType").withConfigProperty(REPORT_TYPE);
+      failureCollector.addFailure("Invalid reportDefinitionReportType",
+                                  "Enter valid reportDefinitionReportType")
+        .withConfigProperty(REPORT_TYPE);
     }
-    if (reportDefinitionReportType != null){
+    if (reportDefinitionReportType != null) {
       validateFields(failureCollector, googleAdsHelper);
     }
   }
 
   protected void validateFields(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
-    if (containsMacro(REPORT_FIELDS)){
+    if (containsMacro(REPORT_FIELDS)) {
       return;
     }
+    List<String> reportFields = getReportFields();
+    Set<String> reportFieldsSet = new HashSet<>(reportFields);
+    if (reportFieldsSet.size() != reportFields.size()) {
+      failureCollector.addFailure("reportFields contains duplicates",
+                                  "Enter valid reportFields according to record type")
+        .withConfigProperty(REPORT_FIELDS);
+    }
+
+    ReportDefinitionField[] reportDefinitionFields;
     try {
-      List<String> fields = googleAdsHelper.getAllFields(this);
-      if (!fields.containsAll(getReportFields())){
-        failureCollector.addFailure("Invalid reportFields", "Enter valid reportFields according to record type").withConfigProperty(REPORT_FIELDS);
-      }
+      reportDefinitionFields = googleAdsHelper.getReportDefinitionFields(this);
     } catch (OAuthException | ValidationException | RemoteException ignored) {
+      return;
+    }
+    Map<String , ReportDefinitionField> reportFieldsMap = new HashMap<>();
+    for (ReportDefinitionField reportDefinitionField : reportDefinitionFields) {
+      if (reportFieldsSet.contains(reportDefinitionField.getFieldName())) {
+        reportFieldsMap.put(reportDefinitionField.getFieldName(), reportDefinitionField);
+        if (reportDefinitionField.getExclusiveFields() != null) {
+          for (String exclusive : reportDefinitionField.getExclusiveFields()) {
+            if (reportFieldsMap.containsKey(exclusive)) {
+              failureCollector.addFailure(String.format("Field %s conflict with %s",
+                                                        reportDefinitionField.getFieldName(),
+                                                        exclusive),
+                                          "Enter valid reportFields according to record type")
+                .withConfigProperty(REPORT_FIELDS);
+            }
+          }
+        }
+      }
+    }
+    reportFieldsSet.removeAll(reportFieldsMap.keySet());
+    if (!reportFieldsSet.isEmpty()) {
+      for (String field : reportFieldsSet) {
+        failureCollector.addFailure(String.format("Invalid Field %s", field),
+                                    "Enter valid reportFields according to record type")
+          .withConfigProperty(REPORT_FIELDS);
+      }
     }
   }
 
   protected void validateDateRange(FailureCollector failureCollector) {
     if (containsMacro(START_DATE)
-      || containsMacro(END_DATE)){
+      || containsMacro(END_DATE)) {
       return;
     }
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyDDmm");
@@ -193,12 +230,14 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
     try {
       startDate = simpleDateFormat.parse(getStartDate());
     } catch (ParseException e) {
-      failureCollector.addFailure("Invalid startDate format.", "Enter valid YYYYMMDD date format.").withConfigProperty(START_DATE);
+      failureCollector.addFailure("Invalid startDate format.", "Enter valid YYYYMMDD date format.")
+        .withConfigProperty(START_DATE);
     }
     try {
       endDate = simpleDateFormat.parse(getEndDate());
     } catch (ParseException e) {
-      failureCollector.addFailure("Invalid endDate format.", "Enter valid YYYYMMDD date format.").withConfigProperty(END_DATE);
+      failureCollector.addFailure("Invalid endDate format.", "Enter valid YYYYMMDD date format.")
+        .withConfigProperty(END_DATE);
     }
     if (startDate != null &&
       endDate != null &&
@@ -254,6 +293,10 @@ public class GoogleAdsBatchSourceConfig extends ReferencePluginConfig {
   }
 
   public ReportDefinitionReportType getReportType() {
+    ReportPresetHelper presetHelper = new ReportPresetHelper();
+    if (presetHelper.getReportPresets().containsKey(reportType)) {
+      return presetHelper.getReportPreset(reportType).getType();
+    }
     return ReportDefinitionReportType.fromValue(reportType);
   }
 }

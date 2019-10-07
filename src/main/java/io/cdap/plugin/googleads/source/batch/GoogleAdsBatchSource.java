@@ -29,6 +29,8 @@ import io.cdap.cdap.etl.api.batch.BatchSourceContext;
 import io.cdap.plugin.common.LineageRecorder;
 import org.apache.hadoop.io.NullWritable;
 
+import java.io.IOException;
+
 /**
  * Plugin read Google AdWords reports in batch
  */
@@ -48,9 +50,13 @@ public class GoogleAdsBatchSource extends BatchSource<NullWritable, StructuredRe
   @Override
   public void configurePipeline(PipelineConfigurer pipelineConfigurer) {
     FailureCollector failureCollector = pipelineConfigurer.getStageConfigurer().getFailureCollector();
-    config.validate(failureCollector);
-    failureCollector.getOrThrowException();
-    pipelineConfigurer.getStageConfigurer().setOutputSchema(config.getSchema());
+    try {
+      config.validate(failureCollector);
+      failureCollector.getOrThrowException();
+      pipelineConfigurer.getStageConfigurer().setOutputSchema(config.getSchema());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void prepareRun(BatchSourceContext context) throws Exception {

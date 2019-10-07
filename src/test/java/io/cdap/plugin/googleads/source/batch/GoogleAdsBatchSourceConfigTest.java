@@ -10,7 +10,7 @@ import io.cdap.plugin.googleads.common.GoogleAdsHelper;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.rmi.RemoteException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +22,8 @@ public class GoogleAdsBatchSourceConfigTest {
 
 
   public static GoogleAdsBatchSourceConfig getTestConfig(String refreshToken, String clientId, String clientSecret,
-                                                         String developerToken, String clientCustomerId) {
+                                                         String developerToken, String clientCustomerId)
+    throws IOException {
     GoogleAdsBatchSourceConfig config = spy(new GoogleAdsBatchSourceConfig("test"));
     List<String> fields = new ArrayList<>();
     fields.add("AccountCurrencyCode");
@@ -109,7 +110,7 @@ public class GoogleAdsBatchSourceConfigTest {
   }
 
   @Test
-  public void testValidateReportTypeAndFields() throws OAuthException, RemoteException, ValidationException {
+  public void testValidateReportTypeAndFields() throws OAuthException, IOException, ValidationException {
     //setup mocks
     GoogleAdsBatchSourceConfig config = spy(new GoogleAdsBatchSourceConfig("test"));
     config.reportType = "KEYWORDS_PERFORMANCE_REPORT";
@@ -144,7 +145,7 @@ public class GoogleAdsBatchSourceConfigTest {
     config.validateReportTypeAndFields(failureCollector, googleAdsHelper);
     //assert
     Assert.assertEquals(1, failureCollector.getValidationFailures().size());
-    Assert.assertEquals("Invalid Field test5", failureCollector.getValidationFailures().get(0).getMessage());
+    Assert.assertEquals("Invalid Field 'test5'", failureCollector.getValidationFailures().get(0).getMessage());
     failureCollector.getValidationFailures().clear();
 
 
@@ -157,9 +158,9 @@ public class GoogleAdsBatchSourceConfigTest {
 
     Assert.assertEquals("reportFields contains duplicates",
                         failureCollector.getValidationFailures().get(0).getMessage());
-    Assert.assertEquals("Field test4 conflict with test3",
+    Assert.assertEquals("Field 'test4' conflicts with field 'test3'",
                         failureCollector.getValidationFailures().get(1).getMessage());
-    Assert.assertEquals("Invalid Field invalid",
+    Assert.assertEquals("Invalid Field 'invalid'",
                         failureCollector.getValidationFailures().get(2).getMessage());
     failureCollector.getValidationFailures().clear();
 
@@ -171,13 +172,13 @@ public class GoogleAdsBatchSourceConfigTest {
     //assert
     Assert.assertEquals(1, failureCollector.getValidationFailures().size());
 
-    Assert.assertEquals("Invalid reportDefinitionReportType",
+    Assert.assertEquals("reportType 'invalid' is not a valid report type",
                         failureCollector.getValidationFailures().get(0).getMessage());
     failureCollector.getValidationFailures().clear();
   }
 
   @Test
-  public void testGetSchema() throws OAuthException, RemoteException, ValidationException {
+  public void testGetSchema() throws OAuthException, IOException, ValidationException {
     //setup mocks
     GoogleAdsBatchSourceConfig config = new GoogleAdsBatchSourceConfig("test");
     config.reportFields = "test1,test2";

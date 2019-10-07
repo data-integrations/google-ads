@@ -44,7 +44,6 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -74,7 +73,8 @@ public class GoogleAdsHelper {
     }
   }
 
-  private ReportDefinition getReportDefinition(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig) {
+  private ReportDefinition getReportDefinition(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
+    throws IOException {
     Selector selector = new Selector();
     selector.getFields().addAll(googleAdsBatchSourceConfig.getReportFields());
     DateRange dateRange = new DateRange();
@@ -142,7 +142,7 @@ public class GoogleAdsHelper {
   }
 
   public ReportDefinitionField[] getReportDefinitionFields(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
-    throws OAuthException, ValidationException, RemoteException {
+    throws OAuthException, ValidationException, IOException {
     AdWordsSession session = getAdWordsSession(googleAdsBatchSourceConfig);
     AdWordsServicesInterface adWordsServices = AdWordsServices.getInstance();
     // Get the ReportDefinitionService.

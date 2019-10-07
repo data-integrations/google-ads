@@ -33,34 +33,28 @@ public class ReportPresetHelper {
 
   private static final Gson gson = new GsonBuilder().create();
 
-  public Map<String, ReportPreset> getReportPresets() {
+  private static Map<String, ReportPreset> reportPresets = null;
+
+  public Map<String, ReportPreset> getReportPresets() throws IOException {
     if (reportPresets == null) {
       initializePresets();
     }
     return reportPresets;
   }
 
-  private static Map<String, ReportPreset> reportPresets = null;
-
-  public ReportPresetHelper() {
-    initializePresets();
-  }
-
-  public ReportPreset getReportPreset(String name) {
+  public ReportPreset getReportPreset(String name) throws IOException {
     if (reportPresets == null) {
       initializePresets();
     }
     return reportPresets.get(name);
   }
 
-  private void initializePresets() {
+  private void initializePresets() throws IOException {
     ClassLoader classLoader = getClass().getClassLoader();
     Type type = new TypeToken<Map<String, ReportPreset>>() {
     }.getType();
     try (InputStream inputStream = classLoader.getResourceAsStream("presets.json")) {
       reportPresets = gson.fromJson(new InputStreamReader(inputStream), type);
-    } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 }

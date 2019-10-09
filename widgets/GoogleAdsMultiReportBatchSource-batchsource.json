@@ -1,0 +1,155 @@
+{
+  "metadata": {
+    "spec-version": "1.5"
+  },
+  "configuration-groups": [
+    {
+      "label": "Basic",
+      "properties": [
+        {
+          "widget-type": "textbox",
+          "label": "Refresh token",
+          "name": "refreshToken"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Client ID",
+          "name": "clientId"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Client Secret",
+          "name": "clientSecret"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Developer token",
+          "name": "developerToken"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Customer ID",
+          "name": "clientCustomerId"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Start Date",
+          "name": "startDate"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "End Date",
+          "name": "endDate"
+        }
+      ]
+    },
+    {
+      "label": "Advanced",
+      "properties": [
+        {
+          "name": "reportFormat",
+          "label": "Format",
+          "widget-type": "select",
+          "widget-attributes": {
+            "default": "CSV",
+            "values": [
+              "CSVFOREXCEL",
+              "CSV",
+              "TSV",
+              "XML",
+              "GZIPPED_CSV",
+              "GZIPPED_XML"
+            ]
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "label": "Include Report Header",
+          "name": "includeReportHeader",
+          "widget-attributes": {
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            },
+            "default": "true"
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "label": "Include Column Header",
+          "name": "includeColumnHeader",
+          "widget-attributes": {
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            },
+            "default": "true"
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "label": "Include Report Summary",
+          "name": "includeReportSummary",
+          "widget-attributes": {
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            },
+            "default": "true"
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "label": "Use Raw Enum Values",
+          "name": "useRawEnumValues",
+          "widget-attributes": {
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            },
+            "default": "false"
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "label": "Include Zero Impressions",
+          "name": "includeZeroImpressions",
+          "widget-attributes": {
+            "on": {
+              "value": "true",
+              "label": "True"
+            },
+            "off": {
+              "value": "false",
+              "label": "False"
+            },
+            "default": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "widget-type": "non-editable-schema-editor",
+      "schema": {
+      }
+    }
+  ]
+}

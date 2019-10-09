@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.cdap.plugin.googleads.source.batch;
+package io.cdap.plugin.googleads.source.single;
 
 import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
@@ -32,7 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * RecordReader implementation, which reads report instances from Google adWords using
+ * RecordReader implementation, which reads report instance from Google adWords using
  * googleads-java-lib.
  */
 public class GoogleAdsRecordReader extends RecordReader<NullWritable, StructuredRecord> {

@@ -14,7 +14,7 @@
  * the License.
  */
 
-package io.cdap.plugin.googleads.source.batch;
+package io.cdap.plugin.googleads.source.single;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;

@@ -20,8 +20,7 @@ import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
 import com.google.common.base.Strings;
 import io.cdap.cdap.api.data.format.StructuredRecord;
-import io.cdap.plugin.googleads.source.batch.GoogleAdsBatchSourceConfig;
-import io.cdap.plugin.googleads.source.batch.GoogleAdsBatchSourceConfigTest;
+import io.cdap.plugin.googleads.source.single.GoogleAdsBatchSourceConfig;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -101,9 +100,24 @@ public class GoogleAdsHelperTest {
   @Test
   public void testBuildReportStructureUsingApi() throws Exception {
     //setup mocks
-    GoogleAdsBatchSourceConfig config = GoogleAdsBatchSourceConfigTest.getTestConfig(refreshToken, clientId,
-                                                                                     clientSecret, developerToken,
-                                                                                     clientCustomerId);
+    GoogleAdsBatchSourceConfig config = spy(new GoogleAdsBatchSourceConfig("test"));
+    List<String> fields = new ArrayList<>();
+    fields.add("AccountCurrencyCode");
+    fields.add("AccountDescriptiveName");
+    fields.add("AccountTimeZone");
+    doReturn(ReportDefinitionReportType.KEYWORDS_PERFORMANCE_REPORT).when(config).getReportType();
+
+    doReturn(fields).when(config).getReportFields();
+    config.startDate = "LAST_30_DAYS";
+    config.endDate = "TODAY";
+    config.refreshToken = refreshToken;
+    config.clientId = clientId;
+    config.clientSecret = clientSecret;
+    config.developerToken = developerToken;
+    config.clientCustomerId = clientCustomerId;
+    config.includeReportSummary = true;
+    config.useRawEnumValues = true;
+    config.includeZeroImpressions = true;
     //test
     GoogleAdsHelper googleAdsHelper = new GoogleAdsHelper();
     List<StructuredRecord> records = googleAdsHelper.buildReportStructure(config);

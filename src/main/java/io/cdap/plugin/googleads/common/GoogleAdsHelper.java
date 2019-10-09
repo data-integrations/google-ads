@@ -36,7 +36,8 @@ import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
 import com.google.api.client.auth.oauth2.Credential;
 import io.cdap.cdap.api.data.format.StructuredRecord;
-import io.cdap.plugin.googleads.source.batch.GoogleAdsBatchSourceConfig;
+import io.cdap.plugin.googleads.source.multiple.GoogleAdsMultiReportBatchSourceConfig;
+import io.cdap.plugin.googleads.source.single.GoogleAdsBatchSourceConfig;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -53,7 +54,7 @@ import java.util.List;
  */
 public class GoogleAdsHelper {
 
-  String downloadReport(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
+  public String downloadReport(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
     throws OAuthException, ValidationException, IOException {
 
     AdWordsSession session = getAdWordsSession(googleAdsBatchSourceConfig);
@@ -84,7 +85,7 @@ public class GoogleAdsHelper {
 
     // Create report definition.
     ReportDefinition reportDefinition = new ReportDefinition();
-    reportDefinition.setReportName("Criteria performance report #" + System.currentTimeMillis());
+    reportDefinition.setReportName(googleAdsBatchSourceConfig.getReportType().value());
     reportDefinition.setDateRangeType(ReportDefinitionDateRangeType.CUSTOM_DATE);
     reportDefinition.setReportType(googleAdsBatchSourceConfig.getReportType());
     reportDefinition.setDownloadFormat(DownloadFormat.CSV);
@@ -92,29 +93,34 @@ public class GoogleAdsHelper {
     return reportDefinition;
   }
 
-  private ReportingConfiguration getReportingConfiguration(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig) {
-    return new ReportingConfiguration.Builder()
-      .skipReportHeader(true)
-      .skipColumnHeader(true)
-      .skipReportSummary(!googleAdsBatchSourceConfig.includeReportSummary)
-      .useRawEnumValues(googleAdsBatchSourceConfig.useRawEnumValues)
-      .includeZeroImpressions(googleAdsBatchSourceConfig.includeZeroImpressions)
-      .build();
+  private ReportingConfiguration getReportingConfiguration(GoogleAdsBaseConfig googleAdsBaseConfig) {
+    ReportingConfiguration.Builder builder = new ReportingConfiguration.Builder();
+    if (googleAdsBaseConfig instanceof GoogleAdsMultiReportBatchSourceConfig) {
+      GoogleAdsMultiReportBatchSourceConfig config = (GoogleAdsMultiReportBatchSourceConfig) googleAdsBaseConfig;
+      builder = builder.skipReportHeader(!config.includeReportHeader)
+        .skipColumnHeader(!config.includeColumnHeader);
+    } else {
+      builder = builder.skipReportHeader(true)
+        .skipColumnHeader(true);
+    }
+    return builder.skipReportSummary(!googleAdsBaseConfig.includeReportSummary)
+      .useRawEnumValues(googleAdsBaseConfig.useRawEnumValues)
+      .includeZeroImpressions(googleAdsBaseConfig.includeZeroImpressions).build();
   }
 
-  public AdWordsSession getAdWordsSession(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
+  public AdWordsSession getAdWordsSession(GoogleAdsBaseConfig googleAdsBaseConfig)
     throws OAuthException, ValidationException {
     AdWordsSession session;
     Credential credential = new OfflineCredentials.Builder()
       .forApi(OfflineCredentials.Api.ADWORDS)
-      .withClientSecrets(googleAdsBatchSourceConfig.clientId, googleAdsBatchSourceConfig.clientSecret)
-      .withRefreshToken(googleAdsBatchSourceConfig.refreshToken)
+      .withClientSecrets(googleAdsBaseConfig.clientId, googleAdsBaseConfig.clientSecret)
+      .withRefreshToken(googleAdsBaseConfig.refreshToken)
       .build()
       .generateCredential();
 
     session = new AdWordsSession.Builder()
-      .withClientCustomerId(googleAdsBatchSourceConfig.clientCustomerId)
-      .withDeveloperToken(googleAdsBatchSourceConfig.developerToken)
+      .withClientCustomerId(googleAdsBaseConfig.clientCustomerId)
+      .withDeveloperToken(googleAdsBaseConfig.developerToken)
       .withOAuth2Credential(credential)
       .build();
     return session;
@@ -141,9 +147,9 @@ public class GoogleAdsHelper {
     return reportStructure;
   }
 
-  public ReportDefinitionField[] getReportDefinitionFields(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
+  public ReportDefinitionField[] getReportDefinitionFields(GoogleAdsBaseConfig config, String reportType)
     throws OAuthException, ValidationException, IOException {
-    AdWordsSession session = getAdWordsSession(googleAdsBatchSourceConfig);
+    AdWordsSession session = getAdWordsSession(config);
     AdWordsServicesInterface adWordsServices = AdWordsServices.getInstance();
     // Get the ReportDefinitionService.
     ReportDefinitionServiceInterface reportDefinitionService =
@@ -151,6 +157,47 @@ public class GoogleAdsHelper {
 
     // Get report fields.
     return reportDefinitionService
-      .getReportFields(ReportDefinitionReportType.fromValue(googleAdsBatchSourceConfig.getReportType().value()));
+      .getReportFields(ReportDefinitionReportType.fromValue(reportType));
+  }
+
+  public String downloadReport(GoogleAdsMultiReportBatchSourceConfig config,
+                               String reportName) throws OAuthException, ValidationException, IOException {
+
+    AdWordsSession session = getAdWordsSession(config);
+    session.setReportingConfiguration(getReportingConfiguration(config));
+
+    AdWordsServicesInterface adWordsServices = AdWordsServices.getInstance();
+
+    ReportDownloaderInterface reportDownloader =
+      adWordsServices.getUtility(session, ReportDownloaderInterface.class);
+
+    try {
+      ReportDownloadResponse response = reportDownloader.downloadReport(
+        getReportDefinition(config, reportName));
+      return response.getAsString();
+    } catch (ReportException | ReportDownloadResponseException e) {
+      throw new IOException(e);
+    }
+  }
+
+  private ReportDefinition getReportDefinition(GoogleAdsMultiReportBatchSourceConfig config,
+                                               String reportPreset)
+    throws IOException {
+    ReportPresetHelper presetHelper = new ReportPresetHelper();
+    Selector selector = new Selector();
+    selector.getFields().addAll(presetHelper.getReportPreset(reportPreset).getFields());
+    DateRange dateRange = new DateRange();
+    dateRange.setMax(config.getEndDate());
+    dateRange.setMin(config.getStartDate());
+    selector.setDateRange(dateRange);
+
+    // Create report definition.
+    ReportDefinition reportDefinition = new ReportDefinition();
+    reportDefinition.setReportName(reportPreset);
+    reportDefinition.setDateRangeType(ReportDefinitionDateRangeType.CUSTOM_DATE);
+    reportDefinition.setReportType(presetHelper.getReportPreset(reportPreset).getType());
+    reportDefinition.setDownloadFormat(config.getReportFormat());
+    reportDefinition.setSelector(selector);
+    return reportDefinition;
   }
 }

@@ -109,8 +109,12 @@ public class BaseGoogleAdsConfig extends ReferencePluginConfig {
     }
     try {
       googleAdsHelper.getAdWordsSession(this);
-    } catch (OAuthException | ValidationException e) {
+    } catch (OAuthException e) {
       failureCollector.addFailure(e.getMessage(), "Enter valid credentials");
+    } catch (ValidationException e) {
+      failureCollector.addFailure(
+        String.format("invalid value '%s' : %s", e.getTrigger(), e.getMessage()),
+        "Enter valid credentials");
     }
   }
 

@@ -128,18 +128,21 @@ public class GoogleAdsHelper {
 
     int maxTries = 3;
     int count = 0;
-    while(true) {
+    while (true) {
       try {
         ReportDownloadResponse response = reportDownloader.downloadReport(
           reportDefinition);
         return response.getAsString();
       } catch (ReportException e) {
-        if (++count == maxTries) throw e;
+        if (++count == maxTries) {
+          throw e;
+        }
       }
     }
   }
 
-  protected ReportDownloaderInterface getReportDownloaderInterface(BaseGoogleAdsConfig config) throws OAuthException, ValidationException {
+  protected ReportDownloaderInterface getReportDownloaderInterface(BaseGoogleAdsConfig config)
+    throws OAuthException, ValidationException {
     AdWordsSession session = getAdWordsSession(config);
     session.setReportingConfiguration(getReportingConfiguration(config));
     AdWordsServicesInterface adWordsServices = AdWordsServices.getInstance();

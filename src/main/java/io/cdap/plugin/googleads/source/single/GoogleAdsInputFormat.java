@@ -32,7 +32,7 @@ import java.util.List;
 public class GoogleAdsInputFormat extends InputFormat {
   @Override
   public List<InputSplit> getSplits(JobContext jobContext) {
-    return Collections.singletonList(new GoogleAdsReportSplit());
+    return Collections.singletonList(new GoogleAdsReportSplit("noop"));
   }
 
   @Override

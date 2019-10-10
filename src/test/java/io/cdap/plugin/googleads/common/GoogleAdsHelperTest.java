@@ -70,7 +70,8 @@ public class GoogleAdsHelperTest {
 
 
   @Test
-  public void testBuildReportStructure() throws OAuthException, IOException, ValidationException, ReportDownloadResponseException, ReportException {
+  public void testBuildReportStructure()
+    throws OAuthException, IOException, ValidationException, ReportDownloadResponseException, ReportException {
     //setup mocks
     BatchSourceGoogleAdsConfig config = spy(new BatchSourceGoogleAdsConfig("test"));
     List<String> fields = new ArrayList<>();

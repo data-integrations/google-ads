@@ -16,11 +16,13 @@
 package io.cdap.plugin.googleads.common;
 
 import com.google.api.ads.adwords.lib.jaxb.v201809.ReportDefinitionReportType;
+import com.google.api.ads.adwords.lib.utils.ReportDownloadResponseException;
+import com.google.api.ads.adwords.lib.utils.ReportException;
 import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
 import com.google.common.base.Strings;
 import io.cdap.cdap.api.data.format.StructuredRecord;
-import io.cdap.plugin.googleads.source.single.GoogleAdsBatchSourceConfig;
+import io.cdap.plugin.googleads.source.single.BatchSourceGoogleAdsConfig;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -68,9 +70,9 @@ public class GoogleAdsHelperTest {
 
 
   @Test
-  public void testBuildReportStructure() throws OAuthException, IOException, ValidationException {
+  public void testBuildReportStructure() throws OAuthException, IOException, ValidationException, ReportDownloadResponseException, ReportException {
     //setup mocks
-    GoogleAdsBatchSourceConfig config = spy(new GoogleAdsBatchSourceConfig("test"));
+    BatchSourceGoogleAdsConfig config = spy(new BatchSourceGoogleAdsConfig("test"));
     List<String> fields = new ArrayList<>();
     fields.add("test1");
     fields.add("test2");
@@ -79,7 +81,7 @@ public class GoogleAdsHelperTest {
     doReturn(fields).when(config).getReportFields();
     String report = "1,2,3\n6,7,8";
     GoogleAdsHelper googleAdsHelper = spy(GoogleAdsHelper.class);
-    doReturn(report).when(googleAdsHelper).downloadReport(config);
+    doReturn(report).when(googleAdsHelper).downloadReport(config, null);
     //test
     List<StructuredRecord> records = googleAdsHelper.buildReportStructure(config);
     //assert
@@ -100,7 +102,7 @@ public class GoogleAdsHelperTest {
   @Test
   public void testBuildReportStructureUsingApi() throws Exception {
     //setup mocks
-    GoogleAdsBatchSourceConfig config = spy(new GoogleAdsBatchSourceConfig("test"));
+    BatchSourceGoogleAdsConfig config = spy(new BatchSourceGoogleAdsConfig("test"));
     List<String> fields = new ArrayList<>();
     fields.add("AccountCurrencyCode");
     fields.add("AccountDescriptiveName");

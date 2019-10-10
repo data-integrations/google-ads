@@ -15,6 +15,8 @@
  */
 package io.cdap.plugin.googleads.source.single;
 
+import com.google.api.ads.adwords.lib.utils.ReportDownloadResponseException;
+import com.google.api.ads.adwords.lib.utils.ReportException;
 import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
 import com.google.gson.Gson;
@@ -37,23 +39,22 @@ import java.util.List;
  */
 public class GoogleAdsRecordReader extends RecordReader<NullWritable, StructuredRecord> {
 
-  private static final Gson gson = new GsonBuilder().create();
-  private final GoogleAdsHelper googleAdsHelper = new GoogleAdsHelper();
-  private List<StructuredRecord> reportStructure;
-  private Iterator<StructuredRecord> iterator;
-  private StructuredRecord currentValue;
+  protected static final Gson GSON = new GsonBuilder().create();
 
+  protected Iterator<StructuredRecord> iterator;
+  private StructuredRecord currentValue;
 
   @Override
   public void initialize(InputSplit inputSplit, TaskAttemptContext taskAttemptContext)
     throws IOException, InterruptedException {
     Configuration conf = taskAttemptContext.getConfiguration();
     String configJson = conf.get(GoogleAdsInputFormatProvider.PROPERTY_CONFIG_JSON);
-    GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig = gson.fromJson(configJson, GoogleAdsBatchSourceConfig.class);
+    BatchSourceGoogleAdsConfig googleAdsBatchSourceConfig = GSON.fromJson(configJson, BatchSourceGoogleAdsConfig.class);
+    List<StructuredRecord> reportStructure;
     try {
-      reportStructure = googleAdsHelper.buildReportStructure(googleAdsBatchSourceConfig);
-    } catch (OAuthException | ValidationException e) {
-      throw new IOException(e);
+      reportStructure = new GoogleAdsHelper().buildReportStructure(googleAdsBatchSourceConfig);
+    } catch (OAuthException | ValidationException | ReportDownloadResponseException | ReportException e) {
+      throw new RuntimeException("download report failed", e);
     }
     iterator = reportStructure.listIterator();
   }

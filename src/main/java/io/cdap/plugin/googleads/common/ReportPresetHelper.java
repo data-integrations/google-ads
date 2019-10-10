@@ -31,7 +31,7 @@ import java.util.Map;
  */
 public class ReportPresetHelper {
 
-  private static final Gson gson = new GsonBuilder().create();
+  private static final Gson GSON = new GsonBuilder().create();
 
   private static Map<String, ReportPreset> reportPresets = null;
 
@@ -43,10 +43,7 @@ public class ReportPresetHelper {
   }
 
   public ReportPreset getReportPreset(String name) throws IOException {
-    if (reportPresets == null) {
-      initializePresets();
-    }
-    return reportPresets.get(name);
+    return getReportPresets().get(name);
   }
 
   private void initializePresets() throws IOException {
@@ -54,7 +51,7 @@ public class ReportPresetHelper {
     Type type = new TypeToken<Map<String, ReportPreset>>() {
     }.getType();
     try (InputStream inputStream = classLoader.getResourceAsStream("presets.json")) {
-      reportPresets = gson.fromJson(new InputStreamReader(inputStream), type);
+      reportPresets = GSON.fromJson(new InputStreamReader(inputStream), type);
     }
   }
 }

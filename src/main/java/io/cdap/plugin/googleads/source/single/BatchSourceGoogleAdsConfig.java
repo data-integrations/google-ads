@@ -24,7 +24,7 @@ import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.etl.api.FailureCollector;
-import io.cdap.plugin.googleads.common.GoogleAdsBaseConfig;
+import io.cdap.plugin.googleads.common.BaseGoogleAdsConfig;
 import io.cdap.plugin.googleads.common.GoogleAdsHelper;
 import io.cdap.plugin.googleads.common.ReportPresetHelper;
 
@@ -40,9 +40,9 @@ import javax.annotation.Nullable;
 /**
  * Provides all required configuration for reading Google AdWords report
  */
-public class GoogleAdsBatchSourceConfig extends GoogleAdsBaseConfig {
+public class BatchSourceGoogleAdsConfig extends BaseGoogleAdsConfig {
 
-  public GoogleAdsBatchSourceConfig(String referenceName) {
+  public BatchSourceGoogleAdsConfig(String referenceName) {
     super(referenceName);
   }
 
@@ -69,14 +69,13 @@ public class GoogleAdsBatchSourceConfig extends GoogleAdsBaseConfig {
   }
 
   @Override
-  public void validate(FailureCollector failureCollector) throws IOException {
+  public void validate(FailureCollector failureCollector) {
     super.validate(failureCollector);
     GoogleAdsHelper googleAdsHelper = new GoogleAdsHelper();
     validateReportTypeAndFields(failureCollector, googleAdsHelper);
   }
 
-  protected void validateReportTypeAndFields(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper)
-    throws IOException {
+  protected void validateReportTypeAndFields(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
     if (containsMacro(REPORT_TYPE)) {
       return;
     }
@@ -87,16 +86,26 @@ public class GoogleAdsBatchSourceConfig extends GoogleAdsBaseConfig {
       failureCollector.addFailure(String.format("reportType '%s' is not a valid report type", reportType),
                                   null).withConfigProperty(REPORT_TYPE);
       return;
+    } catch (IOException e) {
+      failureCollector.addFailure(String.format("Can`t evaluate repo type from preset :%s", e.getMessage()),
+                                  null).withConfigProperty(REPORT_TYPE);
+      return;
     }
     validateFields(failureCollector, googleAdsHelper);
   }
 
-  protected void validateFields(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper)
-    throws IOException {
+  protected void validateFields(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
     if (containsMacro(REPORT_FIELDS)) {
       return;
     }
-    List<String> reportFields = getReportFields();
+    List<String> reportFields = null;
+    try {
+      reportFields = getReportFields();
+    } catch (IOException e) {
+      failureCollector.addFailure(String.format("Can`t evaluate repo fields from preset :%s", e.getMessage()),
+                                  null).withConfigProperty(REPORT_TYPE);
+      return;
+    }
     if (reportFields == null || reportFields.isEmpty()) {
       failureCollector.addFailure("reportFields is empty",
                                   "Enter valid reportFields according to report type or select preset report type")
@@ -109,10 +118,22 @@ public class GoogleAdsBatchSourceConfig extends GoogleAdsBaseConfig {
     }
 
     ReportDefinitionField[] reportDefinitionFields;
+    String reportType = null;
     try {
-      reportDefinitionFields = googleAdsHelper.getReportDefinitionFields(this, this.getReportType().value());
+      reportType = getReportType().value();
+    } catch (IOException e) {
+      failureCollector.addFailure(String.format("Can`t evaluate repo type from preset :%s", e.getMessage()),
+                                  null).withConfigProperty(REPORT_TYPE);
+      return;
+    }
+    try {
+      reportDefinitionFields = googleAdsHelper.getReportDefinitionFields(this, reportType);
     } catch (OAuthException | ValidationException e) {
       failureCollector.addFailure(e.getMessage(), "Enter valid credentials");
+      return;
+    } catch (IOException e) {
+      failureCollector.addFailure(String.format("Exception while downloading report definition :%s", e.getMessage()),
+                                  null);
       return;
     }
     Map<String , ReportDefinitionField> reportFieldsMap = new HashMap<>();

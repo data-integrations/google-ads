@@ -30,7 +30,6 @@ import io.cdap.cdap.etl.api.batch.BatchSourceContext;
 import io.cdap.plugin.common.LineageRecorder;
 import org.apache.hadoop.io.NullWritable;
 
-import java.io.IOException;
 import java.util.stream.Collectors;
 
 /**
@@ -41,24 +40,20 @@ import java.util.stream.Collectors;
 @Description("Reads Google AdWords report in batch")
 public class GoogleAdsMultiReportBatchSource extends BatchSource<NullWritable, StructuredRecord, StructuredRecord> {
 
-  private final GoogleAdsMultiReportBatchSourceConfig config;
+  private final MultiReportBatchSourceGoogleAdsConfig config;
 
   public static final String NAME = "GoogleAdsMultiReportBatchSource";
 
-  public GoogleAdsMultiReportBatchSource(GoogleAdsMultiReportBatchSourceConfig config) {
+  public GoogleAdsMultiReportBatchSource(MultiReportBatchSourceGoogleAdsConfig config) {
     this.config = config;
   }
 
   @Override
   public void configurePipeline(PipelineConfigurer pipelineConfigurer) {
     FailureCollector failureCollector = pipelineConfigurer.getStageConfigurer().getFailureCollector();
-    try {
-      config.validate(failureCollector);
-      failureCollector.getOrThrowException();
-      pipelineConfigurer.getStageConfigurer().setOutputSchema(config.getSchema());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    config.validate(failureCollector);
+    failureCollector.getOrThrowException();
+    pipelineConfigurer.getStageConfigurer().setOutputSchema(config.getSchema());
   }
 
   public void prepareRun(BatchSourceContext context) throws Exception {

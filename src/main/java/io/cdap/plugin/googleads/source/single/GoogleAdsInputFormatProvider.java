@@ -27,13 +27,13 @@ import java.util.Map;
  */
 public class GoogleAdsInputFormatProvider implements InputFormatProvider {
 
-  private static final Gson gson = new GsonBuilder().create();
+  private static final Gson GSON = new GsonBuilder().create();
   private final Map<String, String> conf;
   public static final String PROPERTY_CONFIG_JSON = "cdap.google.ads.config";
 
-  public GoogleAdsInputFormatProvider(GoogleAdsBatchSourceConfig config) {
+  public GoogleAdsInputFormatProvider(BatchSourceGoogleAdsConfig config) {
     this.conf = new ImmutableMap.Builder<String, String>()
-      .put(PROPERTY_CONFIG_JSON, gson.toJson(config))
+      .put(PROPERTY_CONFIG_JSON, GSON.toJson(config))
       .build();
   }
 

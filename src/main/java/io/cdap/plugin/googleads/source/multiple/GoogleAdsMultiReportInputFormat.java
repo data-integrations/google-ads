@@ -16,6 +16,7 @@
 
 package io.cdap.plugin.googleads.source.multiple;
 
+import io.cdap.plugin.googleads.common.GoogleAdsReportSplit;
 import io.cdap.plugin.googleads.common.ReportPresetHelper;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;

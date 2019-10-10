@@ -23,7 +23,6 @@ import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.plugin.common.ReferencePluginConfig;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,7 +33,7 @@ import java.util.GregorianCalendar;
 /**
  * Provides all required configuration for reading Google AdWords reports
  */
-public class GoogleAdsBaseConfig extends ReferencePluginConfig {
+public class BaseGoogleAdsConfig extends ReferencePluginConfig {
 
   public static final String REFRESH_TOKEN = "refreshToken";
   public static final String CLIENT_ID = "clientId";
@@ -59,7 +58,7 @@ public class GoogleAdsBaseConfig extends ReferencePluginConfig {
   @Macro
   public String clientSecret;
   @Name(DEVELOPER_TOKEN)
-  @Description("Developer token consisting of unique string")
+  @Description("Developer token which is a unique string")
   @Macro
   public String developerToken;
   @Name(CLIENT_CUSTOMER_ID)
@@ -71,34 +70,36 @@ public class GoogleAdsBaseConfig extends ReferencePluginConfig {
   @Macro
   public Boolean includeReportSummary;
   @Name(USE_RAW_ENUM_VALUES)
-  @Description("Specifies whether returned format to be the actual enum value.")
+  @Description("Set to true if you want the returned format to be the actual enum value," +
+    " for example, \"IMAGE_AD\" instead of \"Image ad\"." +
+    " Set to false or omit this header if you want the returned format to be the display value.")
   @Macro
   public Boolean useRawEnumValues;
   @Name(INCLUDE_ZERO_IMPRESSIONS)
-  @Description("Specifies whether report include rows where all specified metric fields are zero")
+  @Description("Specifies whether the report includes rows where all specified metric fields equal to zero")
   @Macro
   public Boolean includeZeroImpressions;
   @Name(START_DATE)
   @Description("Start date for the report data. YYYYMMDD format." +
-    " Allow \"LAST_30_DAYS\", \"LAST_60_DAYS\" and \"LAST_90_DAYS\" options")
+    " \"LAST_30_DAYS\", \"LAST_60_DAYS\" and \"LAST_90_DAYS\" values are allowed.")
   @Macro
   public String startDate;
   @Name(END_DATE)
-  @Description("End date for the report data. YYYYMMDD format. Allow \"TODAY\" option")
+  @Description("End date for the report data. YYYYMMDD format. \"TODAY\" value is allowed.")
   @Macro
   public String endDate;
 
-  public GoogleAdsBaseConfig(String referenceName) {
+  public BaseGoogleAdsConfig(String referenceName) {
     super(referenceName);
   }
 
-  public void validate(FailureCollector failureCollector) throws IOException {
+  public void validate(FailureCollector failureCollector) {
     GoogleAdsHelper googleAdsHelper = new GoogleAdsHelper();
-    validateAuthorisation(failureCollector, googleAdsHelper);
+    validateAuthorization(failureCollector, googleAdsHelper);
     validateDateRange(failureCollector);
   }
 
-  protected void validateAuthorisation(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
+  protected void validateAuthorization(FailureCollector failureCollector, GoogleAdsHelper googleAdsHelper) {
     if (containsMacro(REFRESH_TOKEN)
       || containsMacro(CLIENT_ID)
       || containsMacro(CLIENT_SECRET)
@@ -161,13 +162,11 @@ public class GoogleAdsBaseConfig extends ReferencePluginConfig {
       cal.add(Calendar.DAY_OF_MONTH, -30);
       Date today30 = cal.getTime();
       return dateFormat.format(today30);
-    }
-    if (date.equalsIgnoreCase("LAST_60_DAYS")) {
+    } else if (date.equalsIgnoreCase("LAST_60_DAYS")) {
       cal.add(Calendar.DAY_OF_MONTH, -60);
       Date today60 = cal.getTime();
       return dateFormat.format(today60);
-    }
-    if (date.equalsIgnoreCase("LAST_90_DAYS")) {
+    } else if (date.equalsIgnoreCase("LAST_90_DAYS")) {
       cal.add(Calendar.DAY_OF_MONTH, -90);
       Date today90 = cal.getTime();
       return dateFormat.format(today90);

@@ -36,8 +36,8 @@ import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
 import com.google.api.client.auth.oauth2.Credential;
 import io.cdap.cdap.api.data.format.StructuredRecord;
-import io.cdap.plugin.googleads.source.multiple.GoogleAdsMultiReportBatchSourceConfig;
-import io.cdap.plugin.googleads.source.single.GoogleAdsBatchSourceConfig;
+import io.cdap.plugin.googleads.source.multiple.MultiReportBatchSourceGoogleAdsConfig;
+import io.cdap.plugin.googleads.source.single.BatchSourceGoogleAdsConfig;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -54,81 +54,42 @@ import java.util.List;
  */
 public class GoogleAdsHelper {
 
-  public String downloadReport(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
-    throws OAuthException, ValidationException, IOException {
-
-    AdWordsSession session = getAdWordsSession(googleAdsBatchSourceConfig);
-    session.setReportingConfiguration(getReportingConfiguration(googleAdsBatchSourceConfig));
-
-    AdWordsServicesInterface adWordsServices = AdWordsServices.getInstance();
-
-    ReportDownloaderInterface reportDownloader =
-      adWordsServices.getUtility(session, ReportDownloaderInterface.class);
-
-    try {
-      ReportDownloadResponse response = reportDownloader.downloadReport(
-        getReportDefinition(googleAdsBatchSourceConfig));
-      return response.getAsString();
-    } catch (ReportException | ReportDownloadResponseException e) {
-      throw new IOException(e);
-    }
-  }
-
-  private ReportDefinition getReportDefinition(GoogleAdsBatchSourceConfig googleAdsBatchSourceConfig)
-    throws IOException {
-    Selector selector = new Selector();
-    selector.getFields().addAll(googleAdsBatchSourceConfig.getReportFields());
-    DateRange dateRange = new DateRange();
-    dateRange.setMax(googleAdsBatchSourceConfig.getEndDate());
-    dateRange.setMin(googleAdsBatchSourceConfig.getStartDate());
-    selector.setDateRange(dateRange);
-
-    // Create report definition.
-    ReportDefinition reportDefinition = new ReportDefinition();
-    reportDefinition.setReportName(googleAdsBatchSourceConfig.getReportType().value());
-    reportDefinition.setDateRangeType(ReportDefinitionDateRangeType.CUSTOM_DATE);
-    reportDefinition.setReportType(googleAdsBatchSourceConfig.getReportType());
-    reportDefinition.setDownloadFormat(DownloadFormat.CSV);
-    reportDefinition.setSelector(selector);
-    return reportDefinition;
-  }
-
-  private ReportingConfiguration getReportingConfiguration(GoogleAdsBaseConfig googleAdsBaseConfig) {
+  private ReportingConfiguration getReportingConfiguration(BaseGoogleAdsConfig baseGoogleAdsConfig) {
     ReportingConfiguration.Builder builder = new ReportingConfiguration.Builder();
-    if (googleAdsBaseConfig instanceof GoogleAdsMultiReportBatchSourceConfig) {
-      GoogleAdsMultiReportBatchSourceConfig config = (GoogleAdsMultiReportBatchSourceConfig) googleAdsBaseConfig;
+    if (baseGoogleAdsConfig instanceof MultiReportBatchSourceGoogleAdsConfig) {
+      MultiReportBatchSourceGoogleAdsConfig config = (MultiReportBatchSourceGoogleAdsConfig) baseGoogleAdsConfig;
       builder = builder.skipReportHeader(!config.includeReportHeader)
         .skipColumnHeader(!config.includeColumnHeader);
     } else {
       builder = builder.skipReportHeader(true)
         .skipColumnHeader(true);
     }
-    return builder.skipReportSummary(!googleAdsBaseConfig.includeReportSummary)
-      .useRawEnumValues(googleAdsBaseConfig.useRawEnumValues)
-      .includeZeroImpressions(googleAdsBaseConfig.includeZeroImpressions).build();
+    return builder.skipReportSummary(!baseGoogleAdsConfig.includeReportSummary)
+      .useRawEnumValues(baseGoogleAdsConfig.useRawEnumValues)
+      .includeZeroImpressions(baseGoogleAdsConfig.includeZeroImpressions).build();
   }
 
-  public AdWordsSession getAdWordsSession(GoogleAdsBaseConfig googleAdsBaseConfig)
+  public AdWordsSession getAdWordsSession(BaseGoogleAdsConfig baseGoogleAdsConfig)
     throws OAuthException, ValidationException {
     AdWordsSession session;
     Credential credential = new OfflineCredentials.Builder()
       .forApi(OfflineCredentials.Api.ADWORDS)
-      .withClientSecrets(googleAdsBaseConfig.clientId, googleAdsBaseConfig.clientSecret)
-      .withRefreshToken(googleAdsBaseConfig.refreshToken)
+      .withClientSecrets(baseGoogleAdsConfig.clientId, baseGoogleAdsConfig.clientSecret)
+      .withRefreshToken(baseGoogleAdsConfig.refreshToken)
       .build()
       .generateCredential();
 
     session = new AdWordsSession.Builder()
-      .withClientCustomerId(googleAdsBaseConfig.clientCustomerId)
-      .withDeveloperToken(googleAdsBaseConfig.developerToken)
+      .withClientCustomerId(baseGoogleAdsConfig.clientCustomerId)
+      .withDeveloperToken(baseGoogleAdsConfig.developerToken)
       .withOAuth2Credential(credential)
       .build();
     return session;
   }
 
-  public List<StructuredRecord> buildReportStructure(GoogleAdsBatchSourceConfig config)
-    throws IOException, OAuthException, ValidationException {
-    String report = downloadReport(config);
+  public List<StructuredRecord> buildReportStructure(BatchSourceGoogleAdsConfig config)
+    throws IOException, OAuthException, ValidationException, ReportDownloadResponseException, ReportException {
+    String report = downloadReport(config, null);
     Reader reader = new StringReader(report);
     CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT);
 
@@ -147,7 +108,7 @@ public class GoogleAdsHelper {
     return reportStructure;
   }
 
-  public ReportDefinitionField[] getReportDefinitionFields(GoogleAdsBaseConfig config, String reportType)
+  public ReportDefinitionField[] getReportDefinitionFields(BaseGoogleAdsConfig config, String reportType)
     throws OAuthException, ValidationException, IOException {
     AdWordsSession session = getAdWordsSession(config);
     AdWordsServicesInterface adWordsServices = AdWordsServices.getInstance();
@@ -160,32 +121,51 @@ public class GoogleAdsHelper {
       .getReportFields(ReportDefinitionReportType.fromValue(reportType));
   }
 
-  public String downloadReport(GoogleAdsMultiReportBatchSourceConfig config,
-                               String reportName) throws OAuthException, ValidationException, IOException {
+  public String downloadReport(BaseGoogleAdsConfig config, String reportName)
+    throws OAuthException, ValidationException, IOException, ReportException, ReportDownloadResponseException {
+    ReportDownloaderInterface reportDownloader = getReportDownloaderInterface(config);
+    ReportDefinition reportDefinition = getReportDefinition(config, reportName);
 
-    AdWordsSession session = getAdWordsSession(config);
-    session.setReportingConfiguration(getReportingConfiguration(config));
-
-    AdWordsServicesInterface adWordsServices = AdWordsServices.getInstance();
-
-    ReportDownloaderInterface reportDownloader =
-      adWordsServices.getUtility(session, ReportDownloaderInterface.class);
-
-    try {
-      ReportDownloadResponse response = reportDownloader.downloadReport(
-        getReportDefinition(config, reportName));
-      return response.getAsString();
-    } catch (ReportException | ReportDownloadResponseException e) {
-      throw new IOException(e);
+    int maxTries = 3;
+    int count = 0;
+    while(true) {
+      try {
+        ReportDownloadResponse response = reportDownloader.downloadReport(
+          reportDefinition);
+        return response.getAsString();
+      } catch (ReportException e) {
+        if (++count == maxTries) throw e;
+      }
     }
   }
 
-  private ReportDefinition getReportDefinition(GoogleAdsMultiReportBatchSourceConfig config,
+  protected ReportDownloaderInterface getReportDownloaderInterface(BaseGoogleAdsConfig config) throws OAuthException, ValidationException {
+    AdWordsSession session = getAdWordsSession(config);
+    session.setReportingConfiguration(getReportingConfiguration(config));
+    AdWordsServicesInterface adWordsServices = AdWordsServices.getInstance();
+    return adWordsServices.getUtility(session, ReportDownloaderInterface.class);
+  }
+
+  private ReportDefinition getReportDefinition(BaseGoogleAdsConfig config,
                                                String reportPreset)
     throws IOException {
-    ReportPresetHelper presetHelper = new ReportPresetHelper();
+    MultiReportBatchSourceGoogleAdsConfig multiReportConfig = null;
+    BatchSourceGoogleAdsConfig singleReportConfig = null;
+    ReportPreset preset = null;
+    if (config instanceof MultiReportBatchSourceGoogleAdsConfig) {
+      multiReportConfig = (MultiReportBatchSourceGoogleAdsConfig) config;
+      ReportPresetHelper presetHelper = new ReportPresetHelper();
+      preset = presetHelper.getReportPreset(reportPreset);
+    }
+    if (config instanceof BatchSourceGoogleAdsConfig) {
+      singleReportConfig = (BatchSourceGoogleAdsConfig) config;
+    }
     Selector selector = new Selector();
-    selector.getFields().addAll(presetHelper.getReportPreset(reportPreset).getFields());
+    if (preset != null) {
+      selector.getFields().addAll(preset.getFields());
+    } else if (singleReportConfig != null) {
+      selector.getFields().addAll(singleReportConfig.getReportFields());
+    }
     DateRange dateRange = new DateRange();
     dateRange.setMax(config.getEndDate());
     dateRange.setMin(config.getStartDate());
@@ -193,10 +173,16 @@ public class GoogleAdsHelper {
 
     // Create report definition.
     ReportDefinition reportDefinition = new ReportDefinition();
-    reportDefinition.setReportName(reportPreset);
     reportDefinition.setDateRangeType(ReportDefinitionDateRangeType.CUSTOM_DATE);
-    reportDefinition.setReportType(presetHelper.getReportPreset(reportPreset).getType());
-    reportDefinition.setDownloadFormat(config.getReportFormat());
+    if (preset != null && multiReportConfig != null) {
+      reportDefinition.setReportName(reportPreset);
+      reportDefinition.setReportType(preset.getType());
+      reportDefinition.setDownloadFormat(multiReportConfig.getReportFormat());
+    } else if (singleReportConfig != null) {
+      reportDefinition.setReportName(singleReportConfig.getReportType().value());
+      reportDefinition.setReportType(singleReportConfig.getReportType());
+      reportDefinition.setDownloadFormat(DownloadFormat.CSV);
+    }
     reportDefinition.setSelector(selector);
     return reportDefinition;
   }

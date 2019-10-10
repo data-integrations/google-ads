@@ -21,16 +21,15 @@ import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.etl.api.FailureCollector;
-import io.cdap.plugin.googleads.common.GoogleAdsBaseConfig;
+import io.cdap.plugin.googleads.common.BaseGoogleAdsConfig;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Provides all required configuration for reading Google AdWords report
  */
-public class GoogleAdsMultiReportBatchSourceConfig extends GoogleAdsBaseConfig {
+public class MultiReportBatchSourceGoogleAdsConfig extends BaseGoogleAdsConfig {
 
   private static final String REPORT_FORMAT = "reportFormat";
   public static final String INCLUDE_REPORT_HEADER = "includeReportHeader";
@@ -41,15 +40,16 @@ public class GoogleAdsMultiReportBatchSourceConfig extends GoogleAdsBaseConfig {
   @Macro
   public String reportFormat;
   @Name(INCLUDE_REPORT_HEADER)
-  @Description(" Specifies whether report include a header row containing the report name and date range.")
+  @Description("Specifies whether to include a header row to a report." +
+    " This row contains the report name and date range.")
   @Macro
   public Boolean includeReportHeader;
   @Name(INCLUDE_COLUMN_HEADER)
-  @Description("Specifies whether report include a header row containing field names.")
+  @Description("Specifies whether to include a header row to a report. This row contains report field names.")
   @Macro
   public Boolean includeColumnHeader;
 
-  public GoogleAdsMultiReportBatchSourceConfig(String referenceName) {
+  public MultiReportBatchSourceGoogleAdsConfig(String referenceName) {
     super(referenceName);
   }
 
@@ -58,7 +58,7 @@ public class GoogleAdsMultiReportBatchSourceConfig extends GoogleAdsBaseConfig {
   }
 
   @Override
-  public void validate(FailureCollector failureCollector) throws IOException {
+  public void validate(FailureCollector failureCollector) {
     super.validate(failureCollector);
     validateFormat(failureCollector);
   }
@@ -75,10 +75,10 @@ public class GoogleAdsMultiReportBatchSourceConfig extends GoogleAdsBaseConfig {
     }
   }
 
-  public Schema getSchema() throws IOException {
+  public Schema getSchema() {
     Set<Schema.Field> schemaFields = new HashSet<>();
-    schemaFields.add(Schema.Field.of("ReportName", Schema.nullableOf(Schema.of(Schema.Type.STRING))));
-    schemaFields.add(Schema.Field.of("Report", Schema.nullableOf(Schema.of(Schema.Type.STRING))));
+    schemaFields.add(Schema.Field.of("report_name", Schema.nullableOf(Schema.of(Schema.Type.STRING))));
+    schemaFields.add(Schema.Field.of("report", Schema.nullableOf(Schema.of(Schema.Type.STRING))));
 
 
     return Schema.recordOf(

@@ -18,7 +18,7 @@ package io.cdap.plugin.googleads.common;
 import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
 import io.cdap.cdap.etl.mock.validation.MockFailureCollector;
-import io.cdap.plugin.googleads.source.single.GoogleAdsBatchSourceConfig;
+import io.cdap.plugin.googleads.source.single.BatchSourceGoogleAdsConfig;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,32 +26,32 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
-public class GoogleAdsBaseConfigTest {
+public class BaseGoogleAdsConfigTest {
 
 
   @Test
   public void testValidateAuthorisation() throws OAuthException, ValidationException {
     //setup mocks
-    GoogleAdsBatchSourceConfig config = new GoogleAdsBatchSourceConfig("test");
+    BatchSourceGoogleAdsConfig config = new BatchSourceGoogleAdsConfig("test");
     MockFailureCollector failureCollector = new MockFailureCollector();
     GoogleAdsHelper googleAdsHelper = spy(GoogleAdsHelper.class);
     doReturn(null).when(googleAdsHelper).getAdWordsSession(config);
 
     //test
-    config.validateAuthorisation(failureCollector, googleAdsHelper);
+    config.validateAuthorization(failureCollector, googleAdsHelper);
     //assert
     Assert.assertTrue(failureCollector.getValidationFailures().isEmpty());
 
     //setup mocks
     doThrow(new OAuthException("Error occurred")).when(googleAdsHelper).getAdWordsSession(config);
     //test failure
-    config.validateAuthorisation(failureCollector, googleAdsHelper);
+    config.validateAuthorization(failureCollector, googleAdsHelper);
     //assert
     Assert.assertEquals(1, failureCollector.getValidationFailures().size());
     //setup mocks failure
     doThrow(new ValidationException("Error occurred", "invalid")).when(googleAdsHelper).getAdWordsSession(config);
     //test
-    config.validateAuthorisation(failureCollector, googleAdsHelper);
+    config.validateAuthorization(failureCollector, googleAdsHelper);
     //assert
     Assert.assertEquals(2, failureCollector.getValidationFailures().size());
   }
@@ -59,7 +59,7 @@ public class GoogleAdsBaseConfigTest {
   @Test
   public void testValidateDateRange() {
     //setup mocks
-    GoogleAdsBatchSourceConfig config = new GoogleAdsBatchSourceConfig("test");
+    BatchSourceGoogleAdsConfig config = new BatchSourceGoogleAdsConfig("test");
     config.startDate = "20190302";
     config.endDate = "20190305";
     MockFailureCollector failureCollector = new MockFailureCollector();

@@ -56,7 +56,7 @@ public class ReportPresetHelperTest {
   @Test
   public void testPresets() throws Exception {
     //setup mocks
-    GoogleAdsBaseConfig config = spy(new GoogleAdsBaseConfig("test"));
+    BaseGoogleAdsConfig config = spy(new BaseGoogleAdsConfig("test"));
     List<String> fields = new ArrayList<>();
     fields.add("AccountCurrencyCode");
     fields.add("AccountDescriptiveName");
@@ -80,7 +80,7 @@ public class ReportPresetHelperTest {
 
   }
 
-  protected void validatePreset(String name, ReportPreset preset, GoogleAdsBaseConfig config) throws IOException {
+  protected void validatePreset(String name, ReportPreset preset, BaseGoogleAdsConfig config) throws IOException {
     List<String> reportFields = preset.getFields();
     if (reportFields == null || reportFields.isEmpty()) {
       System.out.println(String.format("'%s' reportFields is empty", name));

@@ -27,13 +27,13 @@ import java.util.Map;
  */
 public class GoogleAdsMultiReportInputFormatProvider implements InputFormatProvider {
 
-  private static final Gson gson = new GsonBuilder().create();
+  private static final Gson GSON = new GsonBuilder().create();
   private final Map<String, String> conf;
   public static final String PROPERTY_CONFIG_JSON = "io.cdap.plugin.googleads.source.multiple.config";
 
-  public GoogleAdsMultiReportInputFormatProvider(GoogleAdsMultiReportBatchSourceConfig config) {
+  public GoogleAdsMultiReportInputFormatProvider(MultiReportBatchSourceGoogleAdsConfig config) {
     this.conf = new ImmutableMap.Builder<String, String>()
-      .put(PROPERTY_CONFIG_JSON, gson.toJson(config))
+      .put(PROPERTY_CONFIG_JSON, GSON.toJson(config))
       .build();
   }
 

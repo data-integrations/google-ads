@@ -35,7 +35,7 @@ public class GoogleAdsBatchSourceConfigTest {
   @Test
   public void testValidateReportTypeAndFields() throws OAuthException, IOException, ValidationException {
     //setup mocks
-    GoogleAdsBatchSourceConfig config = spy(new GoogleAdsBatchSourceConfig("test"));
+    BatchSourceGoogleAdsConfig config = spy(new BatchSourceGoogleAdsConfig("test"));
     config.reportType = "KEYWORDS_PERFORMANCE_REPORT";
     config.reportFields = "test1,test2";
     GoogleAdsHelper googleAdsHelper = spy(GoogleAdsHelper.class);
@@ -103,7 +103,7 @@ public class GoogleAdsBatchSourceConfigTest {
   @Test
   public void testGetSchema() throws OAuthException, IOException, ValidationException {
     //setup mocks
-    GoogleAdsBatchSourceConfig config = new GoogleAdsBatchSourceConfig("test");
+    BatchSourceGoogleAdsConfig config = new BatchSourceGoogleAdsConfig("test");
     config.reportFields = "test1,test2";
     //test
     Schema schema = config.getSchema();

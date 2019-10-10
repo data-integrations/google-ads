@@ -39,20 +39,20 @@ import java.io.IOException;
 @Description("Reads Google AdWords report in batch")
 public class GoogleAdsBatchSource extends BatchSource<NullWritable, StructuredRecord, StructuredRecord> {
 
-  private final GoogleAdsBatchSourceConfig config;
+  private final BatchSourceGoogleAdsConfig config;
 
   public static final String NAME = "GoogleAdsBatchSource";
 
-  public GoogleAdsBatchSource(GoogleAdsBatchSourceConfig config) {
+  public GoogleAdsBatchSource(BatchSourceGoogleAdsConfig config) {
     this.config = config;
   }
 
   @Override
   public void configurePipeline(PipelineConfigurer pipelineConfigurer) {
     FailureCollector failureCollector = pipelineConfigurer.getStageConfigurer().getFailureCollector();
+    config.validate(failureCollector);
+    failureCollector.getOrThrowException();
     try {
-      config.validate(failureCollector);
-      failureCollector.getOrThrowException();
       pipelineConfigurer.getStageConfigurer().setOutputSchema(config.getSchema());
     } catch (IOException e) {
       throw new RuntimeException(e);

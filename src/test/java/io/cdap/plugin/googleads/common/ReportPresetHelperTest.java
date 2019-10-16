@@ -9,7 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +18,6 @@ import java.util.Set;
 import static org.mockito.Mockito.spy;
 
 public class ReportPresetHelperTest {
-
 
   private static String refreshToken;
   private static String clientId;
@@ -57,10 +55,6 @@ public class ReportPresetHelperTest {
   public void testPresets() throws Exception {
     //setup mocks
     BaseGoogleAdsConfig config = spy(new BaseGoogleAdsConfig("test"));
-    List<String> fields = new ArrayList<>();
-    fields.add("AccountCurrencyCode");
-    fields.add("AccountDescriptiveName");
-    fields.add("AccountTimeZone");
 
     config.startDate = "LAST_30_DAYS";
     config.endDate = "TODAY";
@@ -77,19 +71,16 @@ public class ReportPresetHelperTest {
     for (Map.Entry<String, ReportPreset> entry : presetHelper.getReportPresets().entrySet()) {
       validatePreset(entry.getKey(), entry.getValue(), config);
     }
-
   }
 
   protected void validatePreset(String name, ReportPreset preset, BaseGoogleAdsConfig config) throws IOException {
     List<String> reportFields = preset.getFields();
     if (reportFields == null || reportFields.isEmpty()) {
-      System.out.println(String.format("'%s' reportFields is empty", name));
-//      Assert.fail(String.format("'%s' reportFields is empty", name));
+      Assert.fail(String.format("'%s' reportFields is empty", name));
     }
     Set<String> reportFieldsSet = new HashSet<>(reportFields);
     if (reportFieldsSet.size() != reportFields.size()) {
-      System.out.println(String.format("'%s' reportFields contains duplicates", name));
-//      Assert.fail(String.format("'%s' reportFields contains duplicates", name));
+      Assert.fail(String.format("'%s' reportFields contains duplicates", name));
     }
 
     ReportDefinitionField[] reportDefinitionFields;
@@ -107,14 +98,10 @@ public class ReportPresetHelperTest {
         if (reportDefinitionField.getExclusiveFields() != null) {
           for (String exclusive : reportDefinitionField.getExclusiveFields()) {
             if (reportFieldsMap.containsKey(exclusive)) {
-              System.out.println(String.format("'%s' Field '%s' conflicts with field '%s'",
-                                               name,
-                                               reportDefinitionField.getFieldName(),
-                                               exclusive));
-//              Assert.fail(String.format("'%s' Field '%s' conflicts with field '%s'",
-//                                        name,
-//                                        reportDefinitionField.getFieldName(),
-//                                        exclusive));
+              Assert.fail(String.format("'%s' Field '%s' conflicts with field '%s'",
+                                        name,
+                                        reportDefinitionField.getFieldName(),
+                                        exclusive));
             }
           }
         }
@@ -123,8 +110,7 @@ public class ReportPresetHelperTest {
     reportFieldsSet.removeAll(reportFieldsMap.keySet());
     if (!reportFieldsSet.isEmpty()) {
       for (String field : reportFieldsSet) {
-        //Assert.fail(String.format("'%s' Invalid Field '%s'", name, field));
-        System.out.println(String.format("'%s' Invalid Field '%s'", name, field));
+        Assert.fail(String.format("'%s' Invalid Field '%s'", name, field));
       }
     }
   }

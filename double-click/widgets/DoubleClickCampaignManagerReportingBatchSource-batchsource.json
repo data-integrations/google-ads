@@ -1,0 +1,212 @@
+{
+  "metadata": {
+    "spec-version": "1.0"
+  },
+  "configuration-groups": [
+    {
+      "label": "General",
+      "properties": [
+        {
+          "widget-type": "textbox",
+          "label": "Reference Name",
+          "name": "referenceName",
+          "widget-attributes": {
+            "placeholder": "Name used to identify this source for lineage"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Application ID",
+          "name": "applicationId",
+          "widget-attributes": {
+            "placeholder": "The application ID"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Access token",
+          "name": "accessToken",
+          "widget-attributes": {
+            "placeholder": "Access token to access Double Click Campaign Manager reporting API"
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "label": "Use an existing report or create a new one?",
+          "name": "useExistingReport",
+          "widget-attributes": {
+            "on": {
+              "value": "on",
+              "label": "Use existing report"
+            },
+            "off": {
+              "value": "off",
+              "label": "Generate new report"
+            },
+            "default": "on"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Report ID",
+          "name": "reportId",
+          "widget-attributes": {
+            "placeholder": "The report ID to fetch the data for"
+          }
+        },
+        {
+          "widget-type": "select",
+          "label": "Report type",
+          "name": "reportType",
+          "widget-attributes": {
+            "values": [
+              "STANDARD",
+              "REACH",
+              "PATH_TO_CONVERSION",
+              "FLOODLIGHT",
+              "CROSS_DIMENSION_REACH",
+              "INSTANT",
+              "GRP"
+            ],
+            "default": "STANDARD"
+          }
+        },
+        {
+          "widget-type": "select",
+          "label": "Date range",
+          "name": "dateRange",
+          "widget-attributes": {
+            "values": [
+              "TODAY",
+              "YESTERDAY",
+              "LAST_7_DAYS",
+              "LAST_14_DAYS",
+              "LAST_24_MONTHS",
+              "LAST_30_DAYS",
+              "LAST_365_DAYS",
+              "LAST_60_DAYS",
+              "LAST_90_DAYS",
+              "PREVIOUS_WEEK",
+              "WEEK_TO_DATE",
+              "PREVIOUS_MONTH",
+              "MONTH_TO_DATE",
+              "PREVIOUS_QUARTER",
+              "QUARTER_TO_DATE",
+              "PREVIOUS_YEAR",
+              "YEAR_TO_DATE"
+            ],
+            "default": "LAST_30_DAYS"
+          }
+        },
+        {
+          "widget-type": "multi-select",
+          "label": "Dimensions",
+          "name": "dimensionsList",
+          "widget-attributes": {
+            "delimiter": ",",
+            "defaultValue": [
+              "value1",
+              "value2"
+            ],
+            "options": [
+              {
+                "id": "value1",
+                "label": "Value 1"
+              },
+              {
+                "id": "value1",
+                "label": "Value 1"
+              }
+            ]
+          }
+        },
+        {
+          "widget-type": "multi-select",
+          "label": "Metrics",
+          "name": "metricsList",
+          "widget-attributes": {
+            "delimiter": ",",
+            "defaultValue": [
+              "value1",
+              "value2"
+            ],
+            "options": [
+              {
+                "id": "value1",
+                "label": "Value 1"
+              },
+              {
+                "id": "value1",
+                "label": "Value 1"
+              }
+            ]
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Advanced properties",
+          "name": "advancedProperties",
+          "widget-attributes": {
+            "placeholder": "A set of advanced properties to include in the report criteria, based on the selected report type"
+          }
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "name": "Use existing report",
+      "condition": {
+        "expression": "useExistingReport == 'on'"
+      },
+      "show": [
+        {
+          "name": "reportId",
+          "type": "property"
+        }
+      ]
+    },
+    {
+      "name": "Generate a new report",
+      "condition": {
+        "expression": "useExistingReport == 'off'"
+      },
+      "show": [
+        {
+          "name": "reportType",
+          "type": "property"
+        },
+        {
+          "name": "dateRange",
+          "type": "property"
+        },
+        {
+          "name": "dimensionsList",
+          "type": "property"
+        },
+        {
+          "name": "metricsList",
+          "type": "property"
+        },
+        {
+          "name": "advancedProperties",
+          "type": "property"
+        }
+      ]
+    }
+  ],
+  "jump-config": {
+    "datasets": [
+      {
+        "ref-property-name": "referenceName"
+      }
+    ]
+  },
+  "outputs": [
+    {
+      "widget-type": "non-editable-schema-editor",
+      "schema": {
+      }
+    }
+  ]
+}

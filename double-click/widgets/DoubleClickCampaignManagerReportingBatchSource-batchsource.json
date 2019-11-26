@@ -23,14 +23,6 @@
           }
         },
         {
-          "widget-type": "textbox",
-          "label": "Access token",
-          "name": "accessToken",
-          "widget-attributes": {
-            "placeholder": "Access token to access Double Click Campaign Manager reporting API"
-          }
-        },
-        {
           "widget-type": "toggle",
           "label": "Use an existing report or create a new one?",
           "name": "useExistingReport",
@@ -52,6 +44,14 @@
           "name": "reportId",
           "widget-attributes": {
             "placeholder": "The report ID to fetch the data for"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Report name",
+          "name": "reportName",
+          "widget-attributes": {
+            "placeholder": "The report name to create"
           }
         },
         {
@@ -141,13 +141,31 @@
               }
             ]
           }
-        },
+        }
+      ]
+    },
+    {
+      "label": "Advanced",
+      "properties": [
         {
           "widget-type": "textbox",
           "label": "Advanced properties",
           "name": "advancedProperties",
           "widget-attributes": {
             "placeholder": "A set of advanced properties to include in the report criteria, based on the selected report type"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Credentials",
+      "properties": [
+        {
+          "widget-type": "textbox",
+          "label": "Access token",
+          "name": "accessToken",
+          "widget-attributes": {
+            "placeholder": "Access token to access Double Click Campaign Manager reporting API"
           }
         }
       ]
@@ -174,6 +192,10 @@
       "show": [
         {
           "name": "reportType",
+          "type": "property"
+        },
+        {
+          "name": "reportName",
           "type": "property"
         },
         {

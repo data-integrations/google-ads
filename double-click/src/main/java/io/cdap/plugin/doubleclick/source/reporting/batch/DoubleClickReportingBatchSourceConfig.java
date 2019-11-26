@@ -124,8 +124,8 @@ public class DoubleClickReportingBatchSourceConfig extends ReferencePluginConfig
     return accessToken;
   }
 
-  public String getUseExistingReport() {
-    return useExistingReport;
+  public Boolean isUseExistingReport() {
+    return Boolean.parseBoolean(useExistingReport);
   }
 
   @Nullable
@@ -173,28 +173,43 @@ public class DoubleClickReportingBatchSourceConfig extends ReferencePluginConfig
   }
 
   public void validate(FailureCollector failureCollector) {
-//    if (!containsMacro(authorizationToken) && Strings.isNullOrEmpty(authorizationToken)) {
-//      failureCollector
-//          .addFailure(String.format("%s must be specified.", AUTHORIZATION_TOKEN), null)
-//          .withConfigProperty(AUTHORIZATION_TOKEN);
-//    }
-//    if (!containsMacro(viewId) && Strings.isNullOrEmpty(viewId)) {
-//      failureCollector
-//          .addFailure(String.format("%s must be specified.", GOOGLE_ANALYTICS_VIEW), null)
-//          .withConfigProperty(GOOGLE_ANALYTICS_VIEW);
-//    }
-//    if ((!containsMacro(startDate) && Strings.isNullOrEmpty(startDate))
-//        && !Strings.isNullOrEmpty(endDate)) {
-//      failureCollector
-//          .addFailure(String.format("Both %s and %s must be specified.", START_DATE, END_DATE),
-//              String.format("Specify %s or remove %s for using default date range.", START_DATE, END_DATE))
-//          .withConfigProperty(START_DATE);
-//    }
-//    if (!Strings.isNullOrEmpty(startDate) && (!containsMacro(endDate) && Strings.isNullOrEmpty(endDate))) {
-//      failureCollector
-//          .addFailure(String.format("Both %s and %s must be specified.", START_DATE, END_DATE),
-//              String.format("Specify %s or remove %s for using default date range.", END_DATE, START_DATE))
-//          .withConfigProperty(END_DATE);
-//    }
+    if (!containsMacro(applicationId) && Strings.isNullOrEmpty(applicationId)) {
+      failureCollector
+          .addFailure(String.format("%s must be specified.", APPLICATION_ID), null)
+          .withConfigProperty(APPLICATION_ID);
+    }
+    if (!containsMacro(accessToken) && Strings.isNullOrEmpty(accessToken)) {
+      failureCollector
+          .addFailure(String.format("%s must be specified.", ACCESS_TOKEN), null)
+          .withConfigProperty(ACCESS_TOKEN);
+    }
+    if (!containsMacro(useExistingReport) && Strings.isNullOrEmpty(useExistingReport)) {
+      failureCollector
+        .addFailure(String.format("%s must be specified.", USE_EXISTING_REPORT), null)
+        .withConfigProperty(USE_EXISTING_REPORT);
+    }
+    if (isUseExistingReport()) {
+      if (!containsMacro(reportId) && Strings.isNullOrEmpty(reportId)) {
+        failureCollector
+          .addFailure(String.format("%s must be specified.", REPORT_ID), null)
+          .withConfigProperty(REPORT_ID);
+      }
+    } else {
+      if (!containsMacro(reportName) && Strings.isNullOrEmpty(reportName)) {
+        failureCollector
+          .addFailure(String.format("%s must be specified.", REPORT_NAME), null)
+          .withConfigProperty(REPORT_NAME);
+      }
+      if (!containsMacro(reportType) && Strings.isNullOrEmpty(reportType)) {
+        failureCollector
+          .addFailure(String.format("%s must be specified.", REPORT_TYPE), null)
+          .withConfigProperty(REPORT_TYPE);
+      }
+      if (getMetricsList().isEmpty()) {
+        failureCollector
+          .addFailure(String.format("%s or must be specified.", METRICS), null)
+          .withConfigProperty(METRICS);
+      }
+    }
   }
 }

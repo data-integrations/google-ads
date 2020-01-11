@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.cdap.plugin.googleads.source.batch;
+package io.cdap.plugin.googleads.source.multiple;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -25,20 +25,20 @@ import java.util.Map;
 /**
  * InputFormatProvider used by cdap to provide configurations to mapreduce job
  */
-public class GoogleAdsInputFormatProvider implements InputFormatProvider {
+public class GoogleAdsMultiReportInputFormatProvider implements InputFormatProvider {
 
-  private static final Gson gson = new GsonBuilder().create();
+  private static final Gson GSON = new GsonBuilder().create();
   private final Map<String, String> conf;
-  public static final String PROPERTY_CONFIG_JSON = "cdap.google.ads.config";
+  public static final String PROPERTY_CONFIG_JSON = "io.cdap.plugin.googleads.source.multiple.config";
 
-  public GoogleAdsInputFormatProvider(GoogleAdsBatchSourceConfig config) {
+  public GoogleAdsMultiReportInputFormatProvider(MultiReportBatchSourceGoogleAdsConfig config) {
     this.conf = new ImmutableMap.Builder<String, String>()
-      .put(PROPERTY_CONFIG_JSON, gson.toJson(config))
+      .put(PROPERTY_CONFIG_JSON, GSON.toJson(config))
       .build();
   }
 
   public String getInputFormatClassName() {
-    return GoogleAdsInputFormat.class.getName();
+    return GoogleAdsMultiReportInputFormat.class.getName();
   }
 
   public Map<String, String> getInputFormatConfiguration() {

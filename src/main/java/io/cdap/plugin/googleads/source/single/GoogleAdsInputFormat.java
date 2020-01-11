@@ -14,8 +14,9 @@
  * the License.
  */
 
-package io.cdap.plugin.googleads.source.batch;
+package io.cdap.plugin.googleads.source.single;
 
+import io.cdap.plugin.googleads.common.GoogleAdsReportSplit;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -31,7 +32,7 @@ import java.util.List;
 public class GoogleAdsInputFormat extends InputFormat {
   @Override
   public List<InputSplit> getSplits(JobContext jobContext) {
-    return Collections.singletonList(new GoogleAdsSplit());
+    return Collections.singletonList(new GoogleAdsReportSplit("noop"));
   }
 
   @Override

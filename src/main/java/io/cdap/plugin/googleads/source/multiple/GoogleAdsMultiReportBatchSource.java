@@ -13,13 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.cdap.plugin.googleads.source.batch;
+package io.cdap.plugin.googleads.source.multiple;
 
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.annotation.Plugin;
 import io.cdap.cdap.api.data.batch.Input;
 import io.cdap.cdap.api.data.format.StructuredRecord;
+import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.api.dataset.lib.KeyValue;
 import io.cdap.cdap.etl.api.Emitter;
 import io.cdap.cdap.etl.api.FailureCollector;
@@ -29,41 +30,39 @@ import io.cdap.cdap.etl.api.batch.BatchSourceContext;
 import io.cdap.plugin.common.LineageRecorder;
 import org.apache.hadoop.io.NullWritable;
 
-import java.io.IOException;
+import java.util.stream.Collectors;
 
 /**
- * Plugin read Google AdWords reports in batch
+ * Plugin read Google AdWords report in batch
  */
 @Plugin(type = BatchSource.PLUGIN_TYPE)
-@Name(GoogleAdsBatchSource.NAME)
+@Name(GoogleAdsMultiReportBatchSource.NAME)
 @Description("Reads Google AdWords report in batch")
-public class GoogleAdsBatchSource extends BatchSource<NullWritable, StructuredRecord, StructuredRecord> {
+public class GoogleAdsMultiReportBatchSource extends BatchSource<NullWritable, StructuredRecord, StructuredRecord> {
 
-  private final GoogleAdsBatchSourceConfig config;
+  private final MultiReportBatchSourceGoogleAdsConfig config;
 
-  public static final String NAME = "GoogleAdsBatchSource";
+  public static final String NAME = "GoogleAdsMultiReportBatchSource";
 
-  public GoogleAdsBatchSource(GoogleAdsBatchSourceConfig config) {
+  public GoogleAdsMultiReportBatchSource(MultiReportBatchSourceGoogleAdsConfig config) {
     this.config = config;
   }
 
   @Override
   public void configurePipeline(PipelineConfigurer pipelineConfigurer) {
     FailureCollector failureCollector = pipelineConfigurer.getStageConfigurer().getFailureCollector();
-    try {
-      config.validate(failureCollector);
-      failureCollector.getOrThrowException();
-      pipelineConfigurer.getStageConfigurer().setOutputSchema(config.getSchema());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    config.validate(failureCollector);
+    failureCollector.getOrThrowException();
+    pipelineConfigurer.getStageConfigurer().setOutputSchema(config.getSchema());
   }
 
   public void prepareRun(BatchSourceContext context) throws Exception {
     LineageRecorder lineageRecorder = new LineageRecorder(context, config.referenceName);
     lineageRecorder.createExternalDataset(config.getSchema());
-    lineageRecorder.recordRead("Reads", "Reading Google AdWords report", config.getReportFields());
-    context.setInput(Input.of(NAME, new GoogleAdsInputFormatProvider(config)));
+    lineageRecorder.recordRead("Reads", "Reading Google AdWords report",
+                               config.getSchema().getFields().stream().map(Schema.Field::getName)
+      .collect(Collectors.toList()));
+    context.setInput(Input.of(NAME, new GoogleAdsMultiReportInputFormatProvider(config)));
   }
 
   @Override

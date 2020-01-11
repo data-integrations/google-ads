@@ -14,27 +14,37 @@
  * the License.
  */
 
-package io.cdap.plugin.googleads.source.batch;
+package io.cdap.plugin.googleads.common;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 
 /**
- * A no-op split.
+ * GoogleAds split by report preset.
  */
-public class GoogleAdsSplit extends InputSplit implements Writable {
-  public GoogleAdsSplit() {
+public class GoogleAdsReportSplit extends InputSplit implements Writable {
+
+  private String reportName;
+
+  public GoogleAdsReportSplit() {
+  }
+
+  public GoogleAdsReportSplit(String reportName) {
+    this.reportName = reportName;
   }
 
   @Override
-  public void readFields(DataInput dataInput) {
+  public void readFields(DataInput dataInput) throws IOException {
+    reportName = dataInput.readUTF();
   }
 
   @Override
-  public void write(DataOutput dataOutput) {
+  public void write(DataOutput dataOutput) throws IOException {
+    dataOutput.writeUTF(reportName);
   }
 
   @Override
@@ -45,5 +55,9 @@ public class GoogleAdsSplit extends InputSplit implements Writable {
   @Override
   public String[] getLocations() {
     return new String[0];
+  }
+
+  public String getReportName() {
+    return reportName;
   }
 }

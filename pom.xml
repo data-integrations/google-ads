@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright © 2016-2018 Cask Data, Inc.
+  ~ Copyright © 2020 Cask Data, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
   ~ use this file except in compliance with the License. You may obtain a copy of
@@ -14,324 +14,344 @@
   ~ License for the specific language governing permissions and limitations under
   ~ the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>io.cdap.plugin</groupId>
 
-  <name>Google Ads Plugin</name>
-  <artifactId>google-ads</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <groupId>io.cdap.delta</groupId>
+  <artifactId>delta</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>Delta Pipelines</name>
+  <packaging>pom</packaging>
+  <description>CDAP Delta pipelines</description>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>CDAP</name>
+      <email>cdap-dev@googlegroups.com</email>
+      <organization>CDAP</organization>
+      <organizationUrl>http://cdap.io</organizationUrl>
+    </developer>
+  </developers>
+
+  <issueManagement>
+    <url>https://issues.cask.co/browse/CDAP</url>
+  </issueManagement>
 
   <properties>
+    <jee.version>7</jee.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <cdap.version>6.1.0-SNAPSHOT</cdap.version>
-    <hadoop.version>2.3.0</hadoop.version>
-    <hydrator.version>2.3.0-SNAPSHOT</hydrator.version>
-    <adwords.version>4.7.0</adwords.version>
-    <guava.version>20.0</guava.version>
-    <commons-csv.version>1.5</commons-csv.version>
-    <junit.version>4.11</junit.version>
-    <mockito.version>1.10.19</mockito.version>
-    <mailapi.version>1.4.3</mailapi.version>
+    <cdap.version>6.0.0</cdap.version>
+    <debezium.version>0.9.5.Final</debezium.version>
+    <junit.version>4.12</junit.version>
+    <slf4j.version>1.7.25</slf4j.version>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>sonatype</id>
+      <url>https://oss.sonatype.org/content/groups/public</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>sonatype</id>
+      <url>https://oss.sonatype.org/content/groups/public</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <distributionManagement>
+    <repository>
+      <id>sonatype.release</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonatype.snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <modules>
+    <module>delta-api</module>
+    <module>delta-app</module>
+  </modules>
 
   <dependencies>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>${guava.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.cdap.cdap</groupId>
-      <artifactId>hydrator-test</artifactId>
-      <version>${cdap.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.cdap.cdap</groupId>
-      <artifactId>cdap-etl-api</artifactId>
-      <version>${cdap.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.api-ads</groupId>
-      <artifactId>ads-lib</artifactId>
-      <version>${adwords.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.api-ads</groupId>
-      <artifactId>adwords-axis</artifactId>
-      <version>${adwords.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.cdap.plugin</groupId>
-      <artifactId>hydrator-common</artifactId>
-      <version>${hydrator.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.avro</groupId>
-          <artifactId>avro</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.zookeeper</groupId>
-          <artifactId>zookeeper</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jersey-core</artifactId>
-          <groupId>com.sun.jersey</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jersey-json</artifactId>
-          <groupId>com.sun.jersey</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jersey-server</artifactId>
-          <groupId>com.sun.jersey</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>servlet-api</artifactId>
-          <groupId>javax.servlet</groupId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
-          <artifactId>jetty</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
-          <artifactId>jetty-util</artifactId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jasper-compiler</artifactId>
-          <groupId>tomcat</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jasper-runtime</artifactId>
-          <groupId>tomcat</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jsp-api</artifactId>
-          <groupId>javax.servlet.jsp</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>slf4j-api</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-mapreduce-client-core</artifactId>
-      <version>${hadoop.version}</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.inject.extensions</groupId>
-          <artifactId>guice-servlet</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-server</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-json</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.sun.jersey.contribs</groupId>
-          <artifactId>jersey-guice</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.1.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>2.0.0-alpha0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-csv</artifactId>
-      <version>${commons-csv.version}</version>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>${mockito.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mailapi</artifactId>
-      <version>${mailapi.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.cdap.cdap</groupId>
-      <artifactId>cdap-data-pipeline</artifactId>
-      <version>${cdap.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>2.17</version>
+          <executions>
+            <execution>
+              <id>validate</id>
+              <phase>process-test-classes</phase>
+              <configuration>
+                <configLocation>checkstyle.xml</configLocation>
+                <suppressionsLocation>suppressions.xml</suppressionsLocation>
+                <encoding>UTF-8</encoding>
+                <consoleOutput>true</consoleOutput>
+                <failsOnError>true</failsOnError>
+                <includeTestSourceDirectory>true</includeTestSourceDirectory>
+              </configuration>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>6.19</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.1</version>
+          <configuration>
+            <source>1.8</source>
+            <target>1.8</target>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.14.1</version>
+          <configuration>
+            <argLine>-Xmx512m</argLine>
+            <systemPropertyVariables>
+              <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
+            </systemPropertyVariables>
+            <includes>
+              <include>**/*TestSuite.java</include>
+              <include>**/Test*.java</include>
+              <include>**/*Test.java</include>
+              <include>**/*TestCase.java</include>
+            </includes>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <version>0.10</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-core</artifactId>
+              <version>1.6</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>xerces</groupId>
+                  <artifactId>xercesImpl</artifactId>
+                </exclusion>
+              </exclusions>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <id>rat-check</id>
+              <phase>validate</phase>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <configuration>
+                <excludes>
+                  <exclude>LICENSE*.txt</exclude>
+                  <!-- This file should be not be there, but I am excluding it for now -->
+                  <exclude>*.rst</exclude>
+                  <exclude>*.md</exclude>
+                  <exclude>**/*.cdap</exclude>
+                  <exclude>**/*.yaml</exclude>
+                  <exclude>**/*.md</exclude>
+                  <exclude>logs/**</exclude>
+                  <exclude>.git/**</exclude>
+                  <exclude>.idea/**</exclude>
+                  <exclude>**/grok/patterns/**</exclude>
+                  <exclude>conf/**</exclude>
+                  <exclude>data/**</exclude>
+                  <exclude>plugins/**</exclude>
+                  <exlcude>**/*.patch</exlcude>
+                  <exclude>**/logrotate.d/**</exclude>
+                  <exclude>**/limits.d/**</exclude>
+                  <exclude>**/*.json</exclude>
+                  <exclude>**/*.json.template</exclude>
+                  <exclude>**/MANIFEST.MF</exclude>
+                  <!-- exclude any hack classes -->
+                  <exclude>**/org/apache/hadoop/**</exclude>
+                  <!-- exclude resource files-->
+                  <exclude>**/resources/**</exclude>
+                </excludes>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>io.cdap</groupId>
+          <artifactId>cdap-maven-plugin</artifactId>
+          <version>1.1.0</version>
+          <configuration>
+            <cdapArtifacts>
+              <parent>system:delta-app[0.0.0,1.0.0-SNAPSHOT)</parent>
+            </cdapArtifacts>
+          </configuration>
+          <executions>
+            <execution>
+              <id>create-artifact-config</id>
+              <phase>prepare-package</phase>
+              <goals>
+                <goal>create-plugin-json</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <version>3.5.0</version>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <_exportcontents>
-              io.cdap.plugin.googleads.*;
-            </_exportcontents>
-            <Embed-Dependency>*;inline=false;scope=compile</Embed-Dependency>
-            <Embed-Transitive>true</Embed-Transitive>
-            <Embed-Directory>lib</Embed-Directory>
-          </instructions>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>bundle</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>io.cdap</groupId>
-        <artifactId>cdap-maven-plugin</artifactId>
-        <version>1.1.0</version>
-        <configuration>
-          <cdapArtifacts>
-            <parent>system:cdap-data-pipeline[6.1.0-SNAPSHOT,7.0.0-SNAPSHOT)</parent>
-          </cdapArtifacts>
-        </configuration>
-        <executions>
-          <execution>
-            <id>create-artifact-config</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>create-plugin-json</goal>
-            </goals>
-          </execution>
-        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.17</version>
-        <executions>
-          <execution>
-            <id>validate</id>
-            <phase>process-test-classes</phase>
-            <configuration>
-              <configLocation>checkstyle.xml</configLocation>
-              <suppressionsLocation>suppressions.xml</suppressionsLocation>
-              <encoding>UTF-8</encoding>
-              <consoleOutput>true</consoleOutput>
-              <failsOnError>true</failsOnError>
-              <includeTestSourceDirectory>true</includeTestSourceDirectory>
-              <excludes>**/org/apache/cassandra/**,**/org/apache/hadoop/**</excludes>
-            </configuration>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>com.puppycrawl.tools</groupId>
-            <artifactId>checkstyle</artifactId>
-            <version>8.18</version>
-          </dependency>
-        </dependencies>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
+
+  <!-- Profile for release. Includes signing of jars. -->
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <!-- Source JAR -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.2.1</version>
+            <configuration>
+              <excludeResources>true</excludeResources>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Javadoc jar -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <configuration>
+              <additionalparam>-Xdoclint:none</additionalparam>
+              <failOnError>false</failOnError>
+              <links>
+                <link>http://download.oracle.com/javase/${jee.version}/docs/api/</link>
+              </links>
+              <doctitle>${project.name} ${project.version}</doctitle>
+              <bottom>
+                <![CDATA[Copyright &#169; {currentYear} <a href="http://cdap.io" target="_blank">CDAP</a> Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License, Version 2.0</a>.]]>
+              </bottom>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadoc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <configuration>
+              <passphrase>${gpg.passphrase}</passphrase>
+              <useAgent>${gpg.useagent}</useAgent>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>2.5.3</version>
+            <configuration>
+              <tag>v${releaseVersion}</tag>
+              <tagNameFormat>v@{project.version}</tagNameFormat>
+              <autoVersionSubmodules>true</autoVersionSubmodules>
+              <!-- releaseProfiles configuration will actually force a Maven profile
+                – the `releases` profile – to become active during the Release process. -->
+              <releaseProfiles>releases</releaseProfiles>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.2</version>
+            <extensions>true</extensions>
+            <configuration>
+              <nexusUrl>https://oss.sonatype.org</nexusUrl>
+              <serverId>sonatype.release</serverId>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

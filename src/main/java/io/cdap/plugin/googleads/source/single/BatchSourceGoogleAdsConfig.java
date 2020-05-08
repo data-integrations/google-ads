@@ -19,6 +19,7 @@ import com.google.api.ads.adwords.axis.v201809.cm.ReportDefinitionField;
 import com.google.api.ads.adwords.lib.jaxb.v201809.ReportDefinitionReportType;
 import com.google.api.ads.common.lib.exception.OAuthException;
 import com.google.api.ads.common.lib.exception.ValidationException;
+import com.google.api.client.util.Strings;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
@@ -30,6 +31,7 @@ import io.cdap.plugin.googleads.common.ReportPresetHelper;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,7 +67,7 @@ public class BatchSourceGoogleAdsConfig extends BaseGoogleAdsConfig {
     if (presetHelper.getReportPresets().containsKey(reportType)) {
       return presetHelper.getReportPreset(reportType).getFields();
     }
-    return Arrays.asList(reportFields.split(","));
+    return Strings.isNullOrEmpty(reportFields) ? Collections.emptyList() : Arrays.asList(reportFields.split(","));
   }
 
   @Override
@@ -136,7 +138,7 @@ public class BatchSourceGoogleAdsConfig extends BaseGoogleAdsConfig {
                                   null);
       return;
     }
-    Map<String , ReportDefinitionField> reportFieldsMap = new HashMap<>();
+    Map<String, ReportDefinitionField> reportFieldsMap = new HashMap<>();
     for (ReportDefinitionField reportDefinitionField : reportDefinitionFields) {
       if (reportFieldsSet.contains(reportDefinitionField.getFieldName())) {
         reportFieldsMap.put(reportDefinitionField.getFieldName(), reportDefinitionField);

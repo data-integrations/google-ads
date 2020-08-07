@@ -28,10 +28,10 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <cdap.version>6.1.0-SNAPSHOT</cdap.version>
+    <cdap.version>6.1.1</cdap.version>
     <hadoop.version>2.3.0</hadoop.version>
-    <hydrator.version>2.3.0-SNAPSHOT</hydrator.version>
-    <adwords.version>4.7.0</adwords.version>
+    <hydrator.version>2.3.5</hydrator.version>
+    <adwords.version>4.9.0</adwords.version>
     <guava.version>20.0</guava.version>
     <commons-csv.version>1.5</commons-csv.version>
     <junit.version>4.11</junit.version>

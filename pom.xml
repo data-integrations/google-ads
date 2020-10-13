@@ -34,7 +34,7 @@
     <adwords.version>4.9.0</adwords.version>
     <guava.version>20.0</guava.version>
     <commons-csv.version>1.5</commons-csv.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.13.1</junit.version>
     <mockito.version>1.10.19</mockito.version>
     <mailapi.version>1.4.3</mailapi.version>
   </properties>

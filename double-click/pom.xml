@@ -69,7 +69,7 @@
     <cdap.version>6.1.0-SNAPSHOT</cdap.version>
     <hadoop.version>2.3.0</hadoop.version>
     <hydrator.version>2.3.0-SNAPSHOT</hydrator.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.13.1</junit.version>
     <mockito.version>1.10.19</mockito.version>
     <spark.version>2.1.3</spark.version>
     <dfa-reporting.version>v3.3-rev20190124-1.28.0</dfa-reporting.version>

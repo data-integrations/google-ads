@@ -15,10 +15,6 @@
  */
 package io.cdap.plugin.googleads.source.single;
 
-import com.google.api.ads.adwords.lib.utils.ReportDownloadResponseException;
-import com.google.api.ads.adwords.lib.utils.ReportException;
-import com.google.api.ads.common.lib.exception.OAuthException;
-import com.google.api.ads.common.lib.exception.ValidationException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.cdap.cdap.api.data.format.StructuredRecord;
@@ -53,7 +49,7 @@ public class GoogleAdsRecordReader extends RecordReader<NullWritable, Structured
     List<StructuredRecord> reportStructure;
     try {
       reportStructure = new GoogleAdsHelper().buildReportStructure(googleAdsBatchSourceConfig);
-    } catch (OAuthException | ValidationException | ReportDownloadResponseException | ReportException e) {
+    } catch (Exception e) {
       throw new RuntimeException("download report failed", e);
     }
     iterator = reportStructure.listIterator();

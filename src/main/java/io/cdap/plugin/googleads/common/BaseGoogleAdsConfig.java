@@ -15,8 +15,6 @@
  */
 package io.cdap.plugin.googleads.common;
 
-import com.google.api.ads.common.lib.exception.OAuthException;
-import com.google.api.ads.common.lib.exception.ValidationException;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
@@ -108,13 +106,9 @@ public class BaseGoogleAdsConfig extends ReferencePluginConfig {
       return;
     }
     try {
-      googleAdsHelper.getAdWordsSession(this);
-    } catch (OAuthException e) {
+      googleAdsHelper.getGoogleAdsClient(this);
+    } catch (Exception e) {
       failureCollector.addFailure(e.getMessage(), "Enter valid credentials");
-    } catch (ValidationException e) {
-      failureCollector.addFailure(
-        String.format("invalid value '%s' : %s", e.getTrigger(), e.getMessage()),
-        "Enter valid credentials");
     }
   }
 

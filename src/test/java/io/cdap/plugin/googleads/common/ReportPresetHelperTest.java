@@ -1,15 +1,11 @@
 package io.cdap.plugin.googleads.common;
 
-import com.google.api.ads.adwords.axis.v201809.cm.ReportDefinitionField;
-import com.google.api.ads.common.lib.exception.OAuthException;
-import com.google.api.ads.common.lib.exception.ValidationException;
 import com.google.common.base.Strings;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -81,37 +77,6 @@ public class ReportPresetHelperTest {
     Set<String> reportFieldsSet = new HashSet<>(reportFields);
     if (reportFieldsSet.size() != reportFields.size()) {
       Assert.fail(String.format("'%s' reportFields contains duplicates", name));
-    }
-
-    ReportDefinitionField[] reportDefinitionFields;
-    try {
-      GoogleAdsHelper googleAdsHelper = new GoogleAdsHelper();
-      reportDefinitionFields = googleAdsHelper.getReportDefinitionFields(config, preset.getType().value());
-    } catch (OAuthException | ValidationException e) {
-      Assert.fail("invalid credentials");
-      return;
-    }
-    Map<String , ReportDefinitionField> reportFieldsMap = new HashMap<>();
-    for (ReportDefinitionField reportDefinitionField : reportDefinitionFields) {
-      if (reportFieldsSet.contains(reportDefinitionField.getFieldName())) {
-        reportFieldsMap.put(reportDefinitionField.getFieldName(), reportDefinitionField);
-        if (reportDefinitionField.getExclusiveFields() != null) {
-          for (String exclusive : reportDefinitionField.getExclusiveFields()) {
-            if (reportFieldsMap.containsKey(exclusive)) {
-              Assert.fail(String.format("'%s' Field '%s' conflicts with field '%s'",
-                                        name,
-                                        reportDefinitionField.getFieldName(),
-                                        exclusive));
-            }
-          }
-        }
-      }
-    }
-    reportFieldsSet.removeAll(reportFieldsMap.keySet());
-    if (!reportFieldsSet.isEmpty()) {
-      for (String field : reportFieldsSet) {
-        Assert.fail(String.format("'%s' Invalid Field '%s'", name, field));
-      }
     }
   }
 }

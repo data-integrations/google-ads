@@ -15,10 +15,7 @@
  */
 package io.cdap.plugin.googleads.source.single;
 
-import com.google.api.ads.adwords.axis.v201809.cm.ReportDefinitionField;
-import com.google.api.ads.adwords.lib.jaxb.v201809.ReportDefinitionReportType;
-import com.google.api.ads.common.lib.exception.OAuthException;
-import com.google.api.ads.common.lib.exception.ValidationException;
+import com.google.ads.googleads.v10.resources.GoogleAdsField;
 import com.google.api.client.util.Strings;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
@@ -81,7 +78,7 @@ public class BatchSourceGoogleAdsConfig extends BaseGoogleAdsConfig {
     if (containsMacro(REPORT_TYPE)) {
       return;
     }
-    ReportDefinitionReportType reportDefinitionReportType = null;
+    String reportDefinitionReportType = null;
     try {
       reportDefinitionReportType = getReportType();
     } catch (IllegalArgumentException ex) {
@@ -105,61 +102,28 @@ public class BatchSourceGoogleAdsConfig extends BaseGoogleAdsConfig {
       reportFields = getReportFields();
     } catch (IOException e) {
       failureCollector.addFailure(String.format("Can`t evaluate repo fields from preset :%s", e.getMessage()),
-                                  null).withConfigProperty(REPORT_TYPE);
+              null).withConfigProperty(REPORT_TYPE);
       return;
     }
     if (reportFields == null || reportFields.isEmpty()) {
       failureCollector.addFailure("reportFields is empty",
-                                  "Enter valid reportFields according to report type or select preset report type")
-        .withConfigProperty(REPORT_FIELDS);
+                      "Enter valid reportFields according to report type or select preset report type")
+              .withConfigProperty(REPORT_FIELDS);
     }
     Set<String> reportFieldsSet = new HashSet<>(reportFields);
     if (reportFieldsSet.size() != reportFields.size()) {
       failureCollector.addFailure("reportFields contains duplicates", null)
-        .withConfigProperty(REPORT_FIELDS);
+              .withConfigProperty(REPORT_FIELDS);
     }
 
-    ReportDefinitionField[] reportDefinitionFields;
+    GoogleAdsField[] reportDefinitionFields;
     String reportType = null;
     try {
-      reportType = getReportType().value();
+      reportType = getReportType();
     } catch (IOException e) {
       failureCollector.addFailure(String.format("Can`t evaluate repo type from preset :%s", e.getMessage()),
-                                  null).withConfigProperty(REPORT_TYPE);
+              null).withConfigProperty(REPORT_TYPE);
       return;
-    }
-    try {
-      reportDefinitionFields = googleAdsHelper.getReportDefinitionFields(this, reportType);
-    } catch (OAuthException | ValidationException e) {
-      failureCollector.addFailure(e.getMessage(), "Enter valid credentials");
-      return;
-    } catch (IOException e) {
-      failureCollector.addFailure(String.format("Exception while downloading report definition :%s", e.getMessage()),
-                                  null);
-      return;
-    }
-    Map<String, ReportDefinitionField> reportFieldsMap = new HashMap<>();
-    for (ReportDefinitionField reportDefinitionField : reportDefinitionFields) {
-      if (reportFieldsSet.contains(reportDefinitionField.getFieldName())) {
-        reportFieldsMap.put(reportDefinitionField.getFieldName(), reportDefinitionField);
-        if (reportDefinitionField.getExclusiveFields() != null) {
-          for (String exclusive : reportDefinitionField.getExclusiveFields()) {
-            if (reportFieldsMap.containsKey(exclusive)) {
-              failureCollector.addFailure(String.format("Field '%s' conflicts with field '%s'",
-                                                        reportDefinitionField.getFieldName(),
-                                                        exclusive), null)
-                .withConfigProperty(REPORT_FIELDS);
-            }
-          }
-        }
-      }
-    }
-    reportFieldsSet.removeAll(reportFieldsMap.keySet());
-    if (!reportFieldsSet.isEmpty()) {
-      for (String field : reportFieldsSet) {
-        failureCollector.addFailure(String.format("Invalid Field '%s'", field), null)
-          .withConfigProperty(REPORT_FIELDS);
-      }
     }
   }
 
@@ -174,11 +138,11 @@ public class BatchSourceGoogleAdsConfig extends BaseGoogleAdsConfig {
       schemaFields);
   }
 
-  public ReportDefinitionReportType getReportType() throws IOException {
+  public String getReportType() throws IOException {
     ReportPresetHelper presetHelper = new ReportPresetHelper();
     if (presetHelper.getReportPresets().containsKey(reportType)) {
       return presetHelper.getReportPreset(reportType).getType();
     }
-    return ReportDefinitionReportType.fromValue(reportType);
+    return reportType;
   }
 }

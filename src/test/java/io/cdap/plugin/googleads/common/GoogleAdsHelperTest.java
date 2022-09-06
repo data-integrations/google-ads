@@ -15,11 +15,6 @@
  */
 package io.cdap.plugin.googleads.common;
 
-import com.google.api.ads.adwords.lib.jaxb.v201809.ReportDefinitionReportType;
-import com.google.api.ads.adwords.lib.utils.ReportDownloadResponseException;
-import com.google.api.ads.adwords.lib.utils.ReportException;
-import com.google.api.ads.common.lib.exception.OAuthException;
-import com.google.api.ads.common.lib.exception.ValidationException;
 import com.google.common.base.Strings;
 import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.plugin.googleads.source.single.BatchSourceGoogleAdsConfig;
@@ -71,14 +66,14 @@ public class GoogleAdsHelperTest {
 
   @Test
   public void testBuildReportStructure()
-    throws OAuthException, IOException, ValidationException, ReportDownloadResponseException, ReportException {
+    throws IOException {
     //setup mocks
     BatchSourceGoogleAdsConfig config = spy(new BatchSourceGoogleAdsConfig("test"));
     List<String> fields = new ArrayList<>();
     fields.add("test1");
     fields.add("test2");
     fields.add("test3");
-    doReturn(ReportDefinitionReportType.KEYWORDS_PERFORMANCE_REPORT).when(config).getReportType();
+    //doReturn(ReportDefinitionReportType.KEYWORDS_PERFORMANCE_REPORT).when(config).getReportType();
     doReturn(fields).when(config).getReportFields();
     String report = "1,2,3\n6,7,8";
     GoogleAdsHelper googleAdsHelper = spy(GoogleAdsHelper.class);
@@ -105,10 +100,10 @@ public class GoogleAdsHelperTest {
     //setup mocks
     BatchSourceGoogleAdsConfig config = spy(new BatchSourceGoogleAdsConfig("test"));
     List<String> fields = new ArrayList<>();
-    fields.add("AccountCurrencyCode");
-    fields.add("AccountDescriptiveName");
-    fields.add("AccountTimeZone");
-    doReturn(ReportDefinitionReportType.KEYWORDS_PERFORMANCE_REPORT).when(config).getReportType();
+    fields.add("customer.currency_code");
+    fields.add("customer.descriptive_name");
+    fields.add("customer.time_zone");
+    //doReturn(ReportDefinitionReportType.KEYWORDS_PERFORMANCE_REPORT).when(config).getReportType();
 
     doReturn(fields).when(config).getReportFields();
     config.startDate = "LAST_30_DAYS";
@@ -128,9 +123,9 @@ public class GoogleAdsHelperTest {
     Iterator<StructuredRecord> iterator = records.iterator();
     Assert.assertTrue(iterator.hasNext());
     StructuredRecord record = iterator.next();
-    Assert.assertEquals("Total", record.get("AccountCurrencyCode"));
-    Assert.assertEquals(" --", record.get("AccountDescriptiveName"));
-    Assert.assertEquals(" --", record.get("AccountTimeZone"));
+    Assert.assertEquals("Total", record.get("customer.currency_code"));
+    Assert.assertEquals(" --", record.get("customer.descriptive_name"));
+    Assert.assertEquals(" --", record.get("customer.time_zone"));
     Assert.assertFalse(iterator.hasNext());
   }
 

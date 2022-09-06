@@ -15,10 +15,6 @@
  */
 package io.cdap.plugin.googleads.source.multiple;
 
-import com.google.api.ads.adwords.lib.utils.ReportDownloadResponseException;
-import com.google.api.ads.adwords.lib.utils.ReportException;
-import com.google.api.ads.common.lib.exception.OAuthException;
-import com.google.api.ads.common.lib.exception.ValidationException;
 import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.plugin.googleads.common.GoogleAdsHelper;
 import io.cdap.plugin.googleads.common.GoogleAdsReportSplit;
@@ -49,7 +45,7 @@ public class GoogleAdsMultiReportRecordReader extends GoogleAdsRecordReader {
     String report;
     try {
       report = new GoogleAdsHelper().downloadReport(config, googleAdsReportSplit.getReportName());
-    } catch (OAuthException | ValidationException | ReportException | ReportDownloadResponseException e) {
+    } catch (Exception e) {
       throw new RuntimeException("download report failed", e);
     }
     StructuredRecord.Builder builder = StructuredRecord.builder(config.getSchema());

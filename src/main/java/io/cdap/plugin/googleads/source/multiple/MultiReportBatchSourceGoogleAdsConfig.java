@@ -15,7 +15,6 @@
  */
 package io.cdap.plugin.googleads.source.multiple;
 
-import com.google.api.ads.adwords.lib.jaxb.v201809.DownloadFormat;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
@@ -51,28 +50,6 @@ public class MultiReportBatchSourceGoogleAdsConfig extends BaseGoogleAdsConfig {
 
   public MultiReportBatchSourceGoogleAdsConfig(String referenceName) {
     super(referenceName);
-  }
-
-  public DownloadFormat getReportFormat() {
-    return DownloadFormat.fromValue(reportFormat);
-  }
-
-  @Override
-  public void validate(FailureCollector failureCollector) {
-    super.validate(failureCollector);
-    validateFormat(failureCollector);
-  }
-
-  private void validateFormat(FailureCollector failureCollector) {
-    if (containsMacro(REPORT_FORMAT)) {
-      return;
-    }
-    try {
-      getReportFormat();
-    } catch (IllegalArgumentException e) {
-      failureCollector.addFailure(String.format("reportFormat '%s' is not a valid report format", reportFormat),
-                                  null).withConfigProperty(REPORT_FORMAT);
-    }
   }
 
   public Schema getSchema() {

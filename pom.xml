@@ -37,6 +37,7 @@
     <junit.version>4.11</junit.version>
     <mockito.version>1.10.19</mockito.version>
     <mailapi.version>1.4.3</mailapi.version>
+    <grpc.version>1.44.0</grpc.version>
   </properties>
 
   <dependencies>
@@ -63,20 +64,24 @@
       <version>${cdap.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.google.api-ads</groupId>
-      <artifactId>ads-lib</artifactId>
-      <version>${adwords.version}</version>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty-shaded</artifactId>
+      <version>{grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-alts</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api</groupId>
+      <artifactId>gax-grpc</artifactId>
+      <version>1.65.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.api-ads</groupId>
-      <artifactId>adwords-axis</artifactId>
-      <version>${adwords.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-      </exclusions>
+      <artifactId>google-ads</artifactId>
+      <version>21.0.0</version>
     </dependency>
     <dependency>
       <groupId>io.cdap.plugin</groupId>
@@ -245,6 +250,12 @@
           <artifactId>guava</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.1</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

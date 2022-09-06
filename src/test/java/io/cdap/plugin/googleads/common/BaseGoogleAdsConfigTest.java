@@ -15,8 +15,6 @@
  */
 package io.cdap.plugin.googleads.common;
 
-import com.google.api.ads.common.lib.exception.OAuthException;
-import com.google.api.ads.common.lib.exception.ValidationException;
 import io.cdap.cdap.etl.mock.validation.MockFailureCollector;
 import io.cdap.plugin.googleads.source.single.BatchSourceGoogleAdsConfig;
 import org.junit.Assert;
@@ -30,12 +28,12 @@ public class BaseGoogleAdsConfigTest {
 
 
   @Test
-  public void testValidateAuthorisation() throws OAuthException, ValidationException {
+  public void testValidateAuthorisation() {
     //setup mocks
     BatchSourceGoogleAdsConfig config = new BatchSourceGoogleAdsConfig("test");
     MockFailureCollector failureCollector = new MockFailureCollector();
     GoogleAdsHelper googleAdsHelper = spy(GoogleAdsHelper.class);
-    doReturn(null).when(googleAdsHelper).getAdWordsSession(config);
+    doReturn(null).when(googleAdsHelper).getGoogleAdsClient(config);
 
     //test
     config.validateAuthorization(failureCollector, googleAdsHelper);
@@ -43,13 +41,13 @@ public class BaseGoogleAdsConfigTest {
     Assert.assertTrue(failureCollector.getValidationFailures().isEmpty());
 
     //setup mocks
-    doThrow(new OAuthException("Error occurred")).when(googleAdsHelper).getAdWordsSession(config);
+    doThrow(new Exception("Error occurred")).when(googleAdsHelper).getGoogleAdsClient(config);
     //test failure
     config.validateAuthorization(failureCollector, googleAdsHelper);
     //assert
     Assert.assertEquals(1, failureCollector.getValidationFailures().size());
     //setup mocks failure
-    doThrow(new ValidationException("Error occurred", "invalid")).when(googleAdsHelper).getAdWordsSession(config);
+    //doThrow(new ValidationException("Error occurred", "invalid")).when(googleAdsHelper).getGoogleAdsClient(config);
     //test
     config.validateAuthorization(failureCollector, googleAdsHelper);
     //assert

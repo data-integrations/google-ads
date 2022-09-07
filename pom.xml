@@ -76,7 +76,57 @@
     <dependency>
       <groupId>com.google.api</groupId>
       <artifactId>gax-grpc</artifactId>
-      <version>1.65.1</version>
+      <version>2.12.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api</groupId>
+      <artifactId>gax</artifactId>
+      <version>2.12.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>3.19.4</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+      <version>1.44.1</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+      <version>1.44.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.auth</groupId>
+      <artifactId>google-auth-library-oauth2-http</artifactId>
+      <version>1.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.auth</groupId>
+      <artifactId>google-auth-library-credentials</artifactId>
+      <version>1.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api-ads</groupId>
+      <artifactId>google-ads-stubs-lib</artifactId>
+      <version>21.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api-ads</groupId>
+      <artifactId>google-ads-stubs-v10</artifactId>
+      <version>21.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api-ads</groupId>
+      <artifactId>google-ads-stubs-v11</artifactId>
+      <version>21.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api-ads</groupId>
+      <artifactId>google-ads-codegen</artifactId>
+      <version>21.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.api-ads</groupId>

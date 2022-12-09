@@ -28,8 +28,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <cdap.version>6.1.1</cdap.version>
-    <hadoop.version>2.3.0</hadoop.version>
+    <cdap.version>6.8.0</cdap.version>
+    <hadoop.version>2.10.2</hadoop.version>
     <hydrator.version>2.3.5</hydrator.version>
     <adwords.version>4.9.0</adwords.version>
     <guava.version>20.0</guava.version>
@@ -236,7 +236,7 @@
     </dependency>
     <dependency>
       <groupId>io.cdap.cdap</groupId>
-      <artifactId>cdap-data-pipeline</artifactId>
+      <artifactId>cdap-data-pipeline2_2.11</artifactId>
       <version>${cdap.version}</version>
       <scope>test</scope>
       <exclusions>
@@ -280,7 +280,7 @@
         <version>1.1.0</version>
         <configuration>
           <cdapArtifacts>
-            <parent>system:cdap-data-pipeline[6.1.0-SNAPSHOT,7.0.0-SNAPSHOT)</parent>
+            <parent>system:cdap-data-pipeline[6.8.0,7.0.0-SNAPSHOT)</parent>
           </cdapArtifacts>
         </configuration>
         <executions>

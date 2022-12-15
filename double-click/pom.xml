@@ -67,7 +67,7 @@
     <!-- this is here because project.basedir evaluates to null in the script build step -->
     <main.basedir>${project.basedir}</main.basedir>
     <cdap.version>6.1.0-SNAPSHOT</cdap.version>
-    <hadoop.version>2.3.0</hadoop.version>
+    <hadoop.version>3.2.3</hadoop.version>
     <hydrator.version>2.3.0-SNAPSHOT</hydrator.version>
     <junit.version>4.11</junit.version>
     <mockito.version>1.10.19</mockito.version>

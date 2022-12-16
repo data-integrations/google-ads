@@ -30,7 +30,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <cdap.version>6.8.0</cdap.version>
     <hadoop.version>2.10.2</hadoop.version>
-    <hydrator.version>2.3.5</hydrator.version>
+    <hydrator.version>2.10.0</hydrator.version>
     <adwords.version>4.9.0</adwords.version>
     <guava.version>20.0</guava.version>
     <commons-csv.version>1.5</commons-csv.version>
@@ -167,10 +167,6 @@
       <version>${hadoop.version}</version>
       <scope>provided</scope>
       <exclusions>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
